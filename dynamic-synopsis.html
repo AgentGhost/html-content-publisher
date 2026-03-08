@@ -245,11 +245,11 @@
                 }
             },
             "SC-06": {
-                title: "Die große Lehrrede (Berg vs. Ebene)",
-                desc: "Matthäus bündelt die Lehre auf dem Berg. Lukas (Lk 6) auf der Ebene.",
+                title: "Bergpredigt vs. Feldrede",
+                desc: "Matthäus (Mt 5-7) verortet die große Rede auf einem Berg, Lukas (Lk 6) auf einer Ebene.",
                 options: {
-                    "A": { label: "Traditionell: Plateau-Theorie", text: "Es ist dasselbe Ereignis. Jesus stand auf einem Plateau am Berghang. (Texte zusammengeführt)." },
-                    "B": { label: "Kritisch: Quelle Q", text: "Die Reden wurden aus Spruchsammlungen künstlich zusammengefügt. (Texte zusammengeführt)." }
+                    "A": { label: "Traditionell: Zwei Reden", text: "Jesus hielt zu unterschiedlichen Zeiten zwei ähnliche Predigten. (Texte in zwei Zeilen getrennt)." },
+                    "B": { label: "Harmonisierend: Eine Rede", text: "Es ist dasselbe Ereignis (z.B. Plateau am Berghang) oder eine gemeinsame literarische Quelle (Q). (Texte in einer Zeile vereint)." }
                 }
             },
             "SC-07": {
@@ -594,9 +594,8 @@
             renderLab();
             updateTableAndDashboard();
             
-            // Kleiner visueller Hinweis für den Nutzer
+            // Suchfeld leeren, aber Position auf der Seite beibehalten (kein erzwungener Scroll mehr)
             document.getElementById('searchInput').value = '';
-            scrollToSection('szenarien');
         }
 
         function initializeApp() {
