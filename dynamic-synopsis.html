@@ -253,12 +253,20 @@
                     "B": { label: "Kritisch: Nestle-Aland (Erklärende Glosse)", text: "Spätere Abschreiber fügten den Vers ein, um zu erklären, warum die Kranken überhaupt am Wasser lagen. (Wird durchgestrichen)." }
                 }
             },
+            "SC-13": {
+                title: "Das Datum des Letzten Abendmahls",
+                desc: "Synoptiker: Es war das Passahmahl. Johannes: Es war vor dem Passah.",
+                options: {
+                    "A": { label: "Traditionell: Kalender-Harmonie", text: "Durch unterschiedliche Kalendersysteme aß Jesus legal sein Passah. (Mahl wird in einer Zeile harmonisiert)." },
+                    "B": { label: "Kritisch: Johanneische Theologie", text: "Johannes veränderte Todestag und Mahl absichtlich. (Wir trennen Mahl und Passah)." }
+                }
+            },
             "SC-06": {
                 title: "Bergpredigt vs. Feldrede",
                 desc: "Matthäus (Mt 5-7) verortet die große Rede auf einem Berg, Lukas (Lk 6) auf einer Ebene.",
                 options: {
                     "A": { label: "Traditionell: Zwei Reden", text: "Jesus hielt zu unterschiedlichen Zeiten zwei ähnliche Predigten. (Texte in zwei Zeilen getrennt)." },
-                    "B": { label: "Harmonisierend: Eine Rede", text: "Es ist dasselbe Ereignis (z.B. Plateau am Berghang) oder eine gemeinsame literarische Quelle (Q). (Texte in einer Zeile vereint)." }
+                    "B": { label: "Harmonisierend: Eine Rede", text: "Es ist dasselbe Ereignis (z.B. Plateau am Berghang) oder eine gemeinsam literarische Quelle (Q). (Texte in einer Zeile vereint)." }
                 }
             },
             "SC-07": {
@@ -307,14 +315,6 @@
                 options: {
                     "A": { label: "Traditionell: Alt- und Neu-Jericho", text: "Das Ereignis fand geografisch zwischen dem alten und neuen Jericho statt. (Texte harmonisiert)." },
                     "B": { label: "Kritisch: Literarische Diskrepanz", text: "Unvereinbare Widersprüche in Ort und Zahl. (Wir spalten die Tabelle auf)." }
-                }
-            },
-            "SC-13": {
-                title: "Das Datum des Letzten Abendmahls",
-                desc: "Synoptiker: Es war das Passahmahl. Johannes: Es war vor dem Passah.",
-                options: {
-                    "A": { label: "Traditionell: Kalender-Harmonie", text: "Durch unterschiedliche Kalendersysteme aß Jesus legal sein Passah. (Mahl wird in einer Zeile harmonisiert)." },
-                    "B": { label: "Kritisch: Johanneische Theologie", text: "Johannes veränderte Todestag und Mahl absichtlich. (Wir trennen Mahl und Passah)." }
                 }
             },
             "SC-14": {
@@ -379,12 +379,13 @@
             
             // 1. Bergpredigt / Feldrede
             if (t.includes("Bergpredigt (auf dem Berg)")) return 'mt';
+            if (t.includes("Große Lehrrede")) return 'mt'; // Bevorzuge Mt im Falle einer Zusammenführung (SC-06=B)
             if (t.includes("Feldrede")) return 'lk';
             if (t.includes("Seligpreisungen")) return 'mt';
             if (t.includes("Salz der Erde")) return 'mt';
             if (t.includes("Jesu Verhältnis zur Tora")) return 'mt';
             if (t.includes("Antithesen")) return 'mt';
-            if (t.includes("Vaterunser")) return 'mt';
+            if (t.includes("Über Almosen")) return 'mt'; // Spezifischer Match für die Vaterunser-Zeile
             if (t.includes("Schätze sammeln")) return 'mt';
             if (t.includes("Vom Richten")) return 'lk'; // Lk 6 hat eine sehr prägnante Version
             if (t.includes("Bitten, Suchen")) return 'mt';
@@ -429,24 +430,22 @@
             if (t.includes("Der Tod Jesu & der zerrissene Vorhang")) return 'lk'; // "Vater, in deine Hände..."
             
             // --- HARTE AUSNAHMEN ---
+            if (t.includes("Gethsemane")) return 'lk'; // Lukas ist hier am detailliertesten (Engel/Blutschweiß)
             if (t.includes("Stammbaum der königlichen")) return 'mt';
             if (t.includes("Flucht nach Ägypten")) return 'mt';
             if (t.includes("Magier")) return 'mt';
             if (t.includes("Barmherziger Samariter")) return 'lk';
             if (t.includes("Verlorenen Sohn")) return 'lk';
             
-            // --- GENERELLE PRIORITÄT ---
-            // Johannes (oft einzigartig) -> Lukas (sehr detailliert) -> Markus (lebendig) -> Matthäus
-            if (item.jh && !item.jh.includes('line-through')) return 'jh';
-            if (item.lk && !item.lk.includes('line-through')) return 'lk';
-            if (item.mk && !item.mk.includes('line-through')) return 'mk';
-            if (item.mt && !item.mt.includes('line-through')) return 'mt';
-            
-            // Fallbacks für den Fall, dass alle Einträge textkritisch gestrichen sind, aber existieren
-            if (item.jh) return 'jh';
-            if (item.lk) return 'lk';
-            if (item.mk) return 'mk';
-            if (item.mt) return 'mt';
+            // --- GENERELLE PRIORITÄT (Berücksichtigt Textkritik-Streitungen) ---
+            // Priorisiere Evangelien ohne Streichung (NA), aber nimm den ersten verfügbaren Inhalt als Fallback
+            const order = ['jh', 'lk', 'mk', 'mt'];
+            for (const key of order) {
+                if (item[key] && !item[key].includes('line-through')) return key;
+            }
+            for (const key of order) {
+                if (item[key]) return key;
+            }
             
             return null;
         }
@@ -543,13 +542,13 @@
             }
             // Detailaufschlüsselung der Predigt
             data.push({ title: "↳ Die Seligpreisungen (Makariologismen)", mt: "5,3-12", mk: "", lk: "6,20-26", jh: "", scenarios: [] });
-            data.push({ title: "↳ Salz der Erde und Licht der Welt", mt: "5,13-16", mk: "(9:50)", lk: "(14:34-35)", jh: "", scenarios: [] });
+            data.push({ title: "↳ Salz der Erde und Licht der Welt", mt: "5,13-16", mk: "(9,50)", lk: "(14,34-35)", jh: "", scenarios: [] });
             data.push({ title: "↳ Jesu Verhältnis zur Tora (Gesetzeserfüllung)", mt: "5,17-20", mk: "", lk: "", jh: "", scenarios: [] });
             data.push({ title: "↳ Antithesen: Über das Töten und Versöhnen", mt: "5,21-26", mk: "", lk: "", jh: "", scenarios: [] });
             data.push({ title: "↳ Antithesen: Über Ehebruch und Scheidung", mt: "5,27-32", mk: "", lk: "", jh: "", scenarios: [] });
             data.push({ title: "↳ Antithesen: Über Schwüre und Feindesliebe", mt: "5,33-48", mk: "", lk: "6,27-35", jh: "", scenarios: [] });
-            data.push({ title: "↳ Über Almosen, Beten (Vaterunser) und Fasten", mt: tcBlock("6,1-18", "6,1-13", "6,13b", "6,14-18", "SC-07"), mk: "", lk: "(11:1-4)", jh: "", scenarios: [] });
-            data.push({ title: "↳ Vom Schätze sammeln und den Alltagssorgen", mt: "6,19-34", mk: "", lk: "(12:22-34)", jh: "", scenarios: [] });
+            data.push({ title: "↳ Über Almosen, Beten (Vaterunser) und Fasten", mt: tcBlock("6,1-18", "6,1-13", "6,13b", "6,14-18", "SC-07"), mk: "", lk: "(11,1-4)", jh: "", scenarios: ["SC-07"] });
+            data.push({ title: "↳ Vom Schätze sammeln und den Alltagssorgen", mt: "6,19-34", mk: "", lk: "(12,22-34)", jh: "", scenarios: [] });
             data.push({ title: "↳ Vom Richten und dem Splitter im Auge", mt: "7,1-6", mk: "", lk: "6,36-42", jh: "", scenarios: [] });
             data.push({ title: "↳ Bitten, Suchen, Anklopfen (Goldene Regel)", mt: "7,7-12", mk: "", lk: "", jh: "", scenarios: [] });
             data.push({ title: "↳ Die enge Pforte und Warnung vor Propheten", mt: "7,13-23", mk: "", lk: "6,43-46", jh: "", scenarios: [] });
@@ -571,7 +570,7 @@
             data.push({ title: "↳ Das Gleichnis vom Sämann und den Böden", mt: "13,1-23", mk: "4,1-20", lk: "8,4-15", jh: "", scenarios: [] });
             data.push({ title: "↳ Das Licht unter dem Scheffel", mt: "", mk: "4,21-25", lk: "8,16-21", jh: "", scenarios: [] });
             data.push({ title: "↳ Unkraut unter dem Weizen / Wachsende Saat", mt: "13,24-30", mk: "4,26-29", lk: "", jh: "", scenarios: [] });
-            data.push({ title: "↳ Das Senfkorn und der Sauerteig", mt: "13,31-33", mk: "4,30-34", lk: "(13:18-21)", jh: "", scenarios: [] });
+            data.push({ title: "↳ Das Senfkorn und der Sauerteig", mt: "13,31-33", mk: "4,30-34", lk: "(13,18-21)", jh: "", scenarios: [] });
             
             data.push({ title: "Sturmstillung", mt: "8,23-27", mk: "4,35-41", lk: "8,22-25", jh: "", scenarios: [] });
             
@@ -865,18 +864,20 @@
                     // Erstellt die Tabellenzelle. Wenn der Rote Pfad aktiv ist, wird hervorgehoben oder ausgegraut.
                     const formatCell = (text, bookDisplay, bookKey) => {
                         if (!text) return '-';
-                        let cellHtml = `<span class="text-stone-400 font-semibold select-all">${bookDisplay}</span> ${formatText(text)}`;
                         
                         if (isReadingPathActive) {
                             if (bookKey === preferredGospelKey) {
+                                // Redundanz-Korrektur: Das Kürzel (Mt, Mk...) wird in der Fokus-Ansicht weggelassen
                                 return `<div class="bg-red-50 border border-red-400 rounded p-1.5 -m-1.5 shadow-sm text-red-900 font-bold relative transition-all duration-300 z-10">
-                                            ${cellHtml}
+                                            ${formatText(text)}
                                         </div>`;
                             } else {
-                                return `<div class="opacity-25 grayscale transition-opacity duration-300 hover:opacity-100 hover:grayscale-0">${cellHtml}</div>`;
+                                return `<div class="opacity-25 grayscale transition-opacity duration-300 hover:opacity-100 hover:grayscale-0"><span class="text-stone-400 font-semibold">${bookDisplay}</span> ${formatText(text)}</div>`;
                             }
                         }
-                        return cellHtml;
+                        
+                        // Normale Ansicht mit Kürzel für Kopier-Zwecke
+                        return `<span class="text-stone-400 font-semibold select-all">${bookDisplay}</span> ${formatText(text)}`;
                     };
 
                     tr.innerHTML = `
