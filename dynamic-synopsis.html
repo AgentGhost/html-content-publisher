@@ -131,7 +131,7 @@
                     <input type="text" id="searchInput" placeholder="Ereignis suchen..." class="pl-10 pr-4 py-2 border border-stone-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 w-full shadow-sm">
                 </div>
                 
-                <!-- NEU: Roter Lese-Pfad Toggle Button -->
+                <!-- Roter Lese-Pfad Toggle Button -->
                 <div>
                     <button id="readingPathBtn" onclick="toggleReadingPath()" class="whitespace-nowrap bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold py-2 px-4 rounded-lg shadow-sm transition-all border border-stone-300 flex items-center gap-2" title="Hebt für jedes Ereignis das beste Evangelium hervor, um die Geschichte einmal komplett ohne Dubletten durchzulesen.">
                         📖 Roter Lese-Pfad: Aus
@@ -373,25 +373,70 @@
 
         // Ermittelt das bevorzugte Evangelium für einen flüssigen, dublettenfreien Lesefluss
         function getPreferredGospel(item) {
-            // Harte Ausnahmen für ikonische Texte (die wir beim Durchlesen nicht überspringen wollen)
-            if (item.title.includes("Bergpredigt")) return 'mt';
-            if (item.title.includes("Vaterunser")) return 'mt';
-            if (item.title.includes("Stammbaum der königlichen")) return 'mt';
-            if (item.title.includes("Flucht nach Ägypten")) return 'mt';
-            if (item.title.includes("Magier")) return 'mt';
-            if (item.title.includes("Feldrede")) return 'lk';
-            if (item.title.includes("Barmherziger Samariter")) return 'lk';
-            if (item.title.includes("Verlorenen Sohn")) return 'lk';
+            const t = item.title;
             
-            // NEU: Maßgeschneiderter Pfad durch die Ölbergrede (Variabilität & Sondergut nutzen)
-            if (item.title.includes("Ölbergrede (Gesamtübersicht)")) return 'mt';
-            if (item.title.includes("Tempelzerstörung & Jüngerfragen")) return 'mk'; // Markus nennt Petrus, Jakobus, Johannes, Andreas namentlich
-            if (item.title.includes("Anfang der Wehen")) return 'mt'; 
-            if (item.title.includes("Belagerung Jerusalems")) return 'lk'; // Lukas fokussiert spezifisch auf die Heere um Jerusalem
-            if (item.title.includes("Falsche Propheten & Kommen")) return 'mk'; // Kraftvolle Dramaturgie bei Markus
-            if (item.title.includes("Ermahnung zur Wachsamkeit")) return 'mt'; // Matthäus ist hier extrem ausführlich
+            // --- SPEZIELLE PFADE FÜR AUFSCHLÜSSELUNGEN ---
             
-            // Generelle Priorität: Johannes (oft einzigartig) -> Lukas (sehr detailliert) -> Markus (lebendig) -> Matthäus
+            // 1. Bergpredigt / Feldrede
+            if (t.includes("Bergpredigt (auf dem Berg)")) return 'mt';
+            if (t.includes("Feldrede")) return 'lk';
+            if (t.includes("Seligpreisungen")) return 'mt';
+            if (t.includes("Salz der Erde")) return 'mt';
+            if (t.includes("Jesu Verhältnis zur Tora")) return 'mt';
+            if (t.includes("Antithesen")) return 'mt';
+            if (t.includes("Vaterunser")) return 'mt';
+            if (t.includes("Schätze sammeln")) return 'mt';
+            if (t.includes("Vom Richten")) return 'lk'; // Lk 6 hat eine sehr prägnante Version
+            if (t.includes("Bitten, Suchen")) return 'mt';
+            if (t.includes("enge Pforte")) return 'mt';
+            if (t.includes("Hausbau auf dem Felsen")) return 'lk';
+
+            // 2. Gleichnisrede am See
+            if (t.includes("Gleichnisrede am See (Gesamtübersicht)")) return 'mk';
+            if (t.includes("Gleichnis vom Sämann")) return 'mk';
+            if (t.includes("Licht unter dem Scheffel")) return 'mk';
+            if (t.includes("Unkraut unter dem Weizen")) return 'mt'; // Exklusiv Matthäus
+            if (t.includes("Senfkorn und der Sauerteig")) return 'mk';
+
+            // 3. Ölbergrede
+            if (t.includes("Ölbergrede (Gesamtübersicht)")) return 'mt';
+            if (t.includes("Tempelzerstörung & Jüngerfragen")) return 'mk'; // Markus nennt die Jünger namentlich
+            if (t.includes("Anfang der Wehen")) return 'mt'; 
+            if (t.includes("Belagerung Jerusalems")) return 'lk'; // Lukas fokussiert spezifisch auf die Heere
+            if (t.includes("Falsche Propheten & Kommen")) return 'mk'; 
+            if (t.includes("Ermahnung zur Wachsamkeit")) return 'mt'; 
+            if (t.includes("zehn Jungfrauen")) return 'mt';
+            if (t.includes("anvertrauten Talente")) return 'mt';
+            if (t.includes("Weltgericht")) return 'mt';
+
+            // 4. Letztes Abendmahl
+            if (t.includes("Das Letzte Abendmahl (Harmonisiert")) return 'lk';
+            if (t.includes("Das Passahmahl (Abendmahl)")) return 'lk';
+            if (t.includes("Vorbereitung des Mahls")) return 'lk'; // Lukas nennt Petrus und Johannes
+            if (t.includes("Die Fußwaschung")) return 'jh'; // Exklusiv Johannes
+            if (t.includes("Bezeichnung des Verräters")) return 'jh'; // Dramaturgisch detailliert
+            if (t.includes("Einsetzung des Abendmahls")) return 'lk'; // Enthält "tut dies zu meinem Gedächtnis"
+            if (t.includes("Rangstreit & Petrus' Verleugnung")) return 'lk';
+
+            // 5. Kreuzigung auf Golgatha
+            if (t.includes("Kreuzigung (Übersicht")) return 'mt';
+            if (t.includes("Kreuzigung (Gesamtübersicht")) return 'mt';
+            if (t.includes("Der Weg nach Golgatha")) return 'lk'; // Weinende Frauen (Exklusiv Lukas)
+            if (t.includes("Die Kreuzigung & Verteilung")) return 'jh'; // Nahtloses Gewand & INRI
+            if (t.includes("Der Spott & Der reumütige")) return 'lk'; // Reumütiger Schächer (Exklusiv Lukas)
+            if (t.includes("Maria und Johannes unterm Kreuz")) return 'jh'; // Exklusiv Johannes
+            if (t.includes("Finsternis & Jesu Gottverlassenheit")) return 'mk'; // "Mein Gott, mein Gott..."
+            if (t.includes("Der Tod Jesu & der zerrissene Vorhang")) return 'lk'; // "Vater, in deine Hände..."
+            
+            // --- HARTE AUSNAHMEN ---
+            if (t.includes("Stammbaum der königlichen")) return 'mt';
+            if (t.includes("Flucht nach Ägypten")) return 'mt';
+            if (t.includes("Magier")) return 'mt';
+            if (t.includes("Barmherziger Samariter")) return 'lk';
+            if (t.includes("Verlorenen Sohn")) return 'lk';
+            
+            // --- GENERELLE PRIORITÄT ---
+            // Johannes (oft einzigartig) -> Lukas (sehr detailliert) -> Markus (lebendig) -> Matthäus
             if (item.jh && !item.jh.includes('line-through')) return 'jh';
             if (item.lk && !item.lk.includes('line-through')) return 'lk';
             if (item.mk && !item.mk.includes('line-through')) return 'mk';
@@ -439,7 +484,7 @@
             data.push({ title: "Ankündigung der Geburt von Johannes und Jesus", mt: "1,18-25", mk: "", lk: "1,5-56", jh: "", scenarios: [] });
             data.push({ title: "Geburt Johannes des Täufers", mt: "", mk: "", lk: "1,57-80", jh: "", scenarios: [] });
             
-            // Geburt Jesu (Matthäus schweigt zur direkten Geburt, behandelt nur Vorgeschichte in 1,18-25 und Magier in 2)
+            // Geburt Jesu
             data.push({ title: "Geburt Jesu & Anbetung der Hirten", mt: "", mk: "", lk: "2,1-20", jh: "", scenarios: [] });
             data.push({ title: "Darstellung im Tempel", mt: "", mk: "", lk: "2,21-39", jh: "", scenarios: [] });
             data.push({ title: "Anbetung der Magier, Flucht nach Ägypten", mt: "2,1-23", mk: "", lk: "", jh: "", scenarios: [] });
@@ -489,13 +534,26 @@
             data.push({ title: "Sabbatkonflikte (Ährenraufen & verdorrte Hand)", mt: "12,1-14", mk: "2,23-3,6", lk: "6,1-11", jh: "", scenarios: [] });
             data.push({ title: "Rückzug an den See & Wahl der zwölf Apostel", mt: "12,15-21; 10,2-4", mk: "3,7-19", lk: "6,12-16", jh: "", scenarios: [] });
 
-            // Lehrrede (SC-06) und Doxologie (SC-07) als Insert
+            // Lehrrede (SC-06) und Doxologie (SC-07) als detaillierte Aufschlüsselung
             if (configState["SC-06"] === "A") {
-                data.push({ title: "Die Bergpredigt (auf dem Berg)", mt: tcBlock("5,1-7,29", "5,1-6,13", "6,13b", "6,14-7,29", "SC-07"), mk: "", lk: "", jh: "", scenarios: ["SC-06", "SC-07"] });
+                data.push({ title: "Die Bergpredigt (auf dem Berg - Übersicht)", mt: tcBlock("5,1-7,29", "5,1-6,13", "6,13b", "6,14-7,29", "SC-07"), mk: "", lk: "", jh: "", scenarios: ["SC-06", "SC-07"] });
                 data.push({ title: "Die Feldrede (auf der Ebene)", mt: "", mk: "", lk: "6,17-49", jh: "", scenarios: ["SC-06"] });
             } else {
-                data.push({ title: "Die Große Lehrrede (Bergpredigt & Feldrede vereint)", mt: tcBlock("5,1-7,29", "5,1-6,13", "6,13b", "6,14-7,29", "SC-07"), mk: "", lk: "6,17-49*", jh: "", scenarios: ["SC-06", "SC-07"] });
+                data.push({ title: "Die Große Lehrrede (Bergpredigt & Feldrede vereint - Übersicht)", mt: tcBlock("5,1-7,29", "5,1-6,13", "6,13b", "6,14-7,29", "SC-07"), mk: "", lk: "6,17-49*", jh: "", scenarios: ["SC-06", "SC-07"] });
             }
+            // Detailaufschlüsselung der Predigt
+            data.push({ title: "↳ Die Seligpreisungen (Makariologismen)", mt: "5,3-12", mk: "", lk: "6,20-26", jh: "", scenarios: [] });
+            data.push({ title: "↳ Salz der Erde und Licht der Welt", mt: "5,13-16", mk: "(9:50)", lk: "(14:34-35)", jh: "", scenarios: [] });
+            data.push({ title: "↳ Jesu Verhältnis zur Tora (Gesetzeserfüllung)", mt: "5,17-20", mk: "", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Antithesen: Über das Töten und Versöhnen", mt: "5,21-26", mk: "", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Antithesen: Über Ehebruch und Scheidung", mt: "5,27-32", mk: "", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Antithesen: Über Schwüre und Feindesliebe", mt: "5,33-48", mk: "", lk: "6,27-35", jh: "", scenarios: [] });
+            data.push({ title: "↳ Über Almosen, Beten (Vaterunser) und Fasten", mt: tcBlock("6,1-18", "6,1-13", "6,13b", "6,14-18", "SC-07"), mk: "", lk: "(11:1-4)", jh: "", scenarios: [] });
+            data.push({ title: "↳ Vom Schätze sammeln und den Alltagssorgen", mt: "6,19-34", mk: "", lk: "(12:22-34)", jh: "", scenarios: [] });
+            data.push({ title: "↳ Vom Richten und dem Splitter im Auge", mt: "7,1-6", mk: "", lk: "6,36-42", jh: "", scenarios: [] });
+            data.push({ title: "↳ Bitten, Suchen, Anklopfen (Goldene Regel)", mt: "7,7-12", mk: "", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Die enge Pforte und Warnung vor Propheten", mt: "7,13-23", mk: "", lk: "6,43-46", jh: "", scenarios: [] });
+            data.push({ title: "↳ Gleichnis vom Hausbau auf dem Felsen", mt: "7,24-27", mk: "", lk: "6,47-49", jh: "", scenarios: [] });
 
             data.push({ title: "Heilung des Knechts & Jüngling von Nain", mt: "8,5-13", mk: "", lk: "7,1-17", jh: "", scenarios: [] });
             data.push({ title: "Anfrage des Täufers", mt: "11,2-19", mk: "", lk: "7,18-35", jh: "", scenarios: [] });
@@ -507,7 +565,14 @@
             
             data.push({ title: "Frauen in der Nachfolge", mt: "", mk: "", lk: "8,1-3", jh: "", scenarios: [] });
             data.push({ title: "Beelzebul-Streit & Jesu wahre Verwandte", mt: "12,22-50", mk: "3,20-35", lk: "8,19-21; 11,14-23", jh: "", scenarios: [] });
-            data.push({ title: "Gleichnisrede am See (Sämann, Unkraut...)", mt: "13,1-52", mk: "4,1-34", lk: "8,4-18", jh: "", scenarios: [] });
+            
+            // Gleichnisrede am See (Aufgeschlüsselt)
+            data.push({ title: "Gleichnisrede am See (Gesamtübersicht)", mt: "13,1-52", mk: "4,1-34", lk: "8,4-18", jh: "", scenarios: [] });
+            data.push({ title: "↳ Das Gleichnis vom Sämann und den Böden", mt: "13,1-23", mk: "4,1-20", lk: "8,4-15", jh: "", scenarios: [] });
+            data.push({ title: "↳ Das Licht unter dem Scheffel", mt: "", mk: "4,21-25", lk: "8,16-21", jh: "", scenarios: [] });
+            data.push({ title: "↳ Unkraut unter dem Weizen / Wachsende Saat", mt: "13,24-30", mk: "4,26-29", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Das Senfkorn und der Sauerteig", mt: "13,31-33", mk: "4,30-34", lk: "(13:18-21)", jh: "", scenarios: [] });
+            
             data.push({ title: "Sturmstillung", mt: "8,23-27", mk: "4,35-41", lk: "8,22-25", jh: "", scenarios: [] });
             
             // Gerasa (SC-09)
@@ -602,7 +667,7 @@
             data.push({ title: "Steuerfrage & Auferstehung", mt: "22,1-46", mk: "12,13-37", lk: "20,20-44", jh: "", scenarios: [] });
             data.push({ title: "Weherufe gegen die Pharisäer", mt: "23,1-39", mk: "12,38-44", lk: "20,45-21,4", jh: "", scenarios: [] });
             
-            // NEU: Detailliert aufgeschlüsselte Ölbergrede für dynamischen Lese-Pfad
+            // Detailliert aufgeschlüsselte Ölbergrede für dynamischen Lese-Pfad
             data.push({ title: "Die Ölbergrede (Gesamtübersicht)", mt: "24,1-25,46", mk: "13,1-37", lk: "21,5-38", jh: "", scenarios: [] });
             data.push({ title: "↳ Tempelzerstörung & Jüngerfragen", mt: "24,1-3", mk: "13,1-4", lk: "21,5-7", jh: "", scenarios: [] });
             data.push({ title: "↳ Anfang der Wehen & Verfolgung", mt: "24,4-14", mk: "13,5-13", lk: "21,8-19", jh: "", scenarios: [] });
@@ -616,13 +681,18 @@
 
             data.push({ title: "Verrat des Judas", mt: "26,1-5; 26,14-16", mk: "14,1-2; 14,10-11", lk: "22,1-6", jh: "", scenarios: [] });
 
-            // Abendmahl (SC-13)
+            // Abendmahl (SC-13) & Detail-Aufschlüsselung
             if (configState["SC-13"] === "B") {
-                data.push({ title: "Mahl vor dem Passah & Fußwaschung", mt: "", mk: "", lk: "", jh: "13,1-38", scenarios: ["SC-13"] });
-                data.push({ title: "Das Passahmahl (Abendmahl)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "", scenarios: ["SC-13"] });
+                data.push({ title: "Mahl vor dem Passah & Fußwaschung (Übersicht)", mt: "", mk: "", lk: "", jh: "13,1-38", scenarios: ["SC-13"] });
+                data.push({ title: "Das Passahmahl (Abendmahl - Übersicht)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "", scenarios: ["SC-13"] });
             } else {
-                data.push({ title: "Das Letzte Abendmahl (Harmonisiert als Passah)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "13,1-38", scenarios: ["SC-13"] });
+                data.push({ title: "Das Letzte Abendmahl (Harmonisiert als Passah - Übersicht)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "13,1-38", scenarios: ["SC-13"] });
             }
+            data.push({ title: "↳ Vorbereitung des Mahls", mt: "26,17-19", mk: "14,12-16", lk: "22,7-13", jh: "", scenarios: [] });
+            data.push({ title: "↳ Die Fußwaschung", mt: "", mk: "", lk: "", jh: "13,1-20", scenarios: [] });
+            data.push({ title: "↳ Bezeichnung des Verräters", mt: "26,20-25", mk: "14,17-21", lk: "22,21-23", jh: "13,21-30", scenarios: [] });
+            data.push({ title: "↳ Einsetzung des Abendmahls", mt: "26,26-29", mk: "14,22-25", lk: "22,14-20", jh: "", scenarios: [] });
+            data.push({ title: "↳ Rangstreit & Petrus' Verleugnung vorhergesagt", mt: "26,31-35", mk: "14,27-31", lk: "22,24-38", jh: "13,31-38", scenarios: [] });
 
             data.push({ title: "Abschiedsreden & Hohepriesterliches Gebet", mt: "", mk: "", lk: "", jh: "14,1-17,26", scenarios: [] });
             
@@ -632,13 +702,19 @@
             data.push({ title: "Gefangennahme & Flucht", mt: "26,47-56", mk: "14,43-52", lk: "22,47-53", jh: "18,3-11", scenarios: [] });
             data.push({ title: "Vor dem Hohen Rat & Verleugnung", mt: "26,57-75", mk: "14,53-72", lk: "22,54-71", jh: "18,12-27", scenarios: [] });
 
-            // Kreuzigung Uhrzeit (SC-15)
+            // Kreuzigung Uhrzeit (SC-15) & Detail-Aufschlüsselung
             if (configState["SC-15"] === "B") {
                 data.push({ title: "Judas' Ende & Verhör durch Pilatus (Urteil 6. Stunde Joh)", mt: "27,1-30", mk: "15,1-19", lk: "23,1-25", jh: "18,28-19,16", scenarios: ["SC-15"] });
-                data.push({ title: "Kreuzigung (Ab der 3. Stunde bei Markus)", mt: "27,31-56", mk: "15,20-41", lk: "23,26-49", jh: "19,17-37", scenarios: ["SC-15"] });
+                data.push({ title: "Die Kreuzigung (Gesamtübersicht ab der 3. Stunde)", mt: "27,31-56", mk: "15,20-41", lk: "23,26-49", jh: "19,17-37", scenarios: ["SC-15"] });
             } else {
-                data.push({ title: "Ende des Judas, Vor Pilatus & Kreuzigung", mt: "27,1-56", mk: "15,1-41", lk: "23,1-49", jh: "18,28-19,37", scenarios: ["SC-15"] });
+                data.push({ title: "Ende des Judas, Vor Pilatus & Kreuzigung (Übersicht)", mt: "27,1-56", mk: "15,1-41", lk: "23,1-49", jh: "18,28-19,37", scenarios: ["SC-15"] });
             }
+            data.push({ title: "↳ Der Weg nach Golgatha & Simon von Kyrene", mt: "27,31-32", mk: "15,20-21", lk: "23,26-32", jh: "19,17", scenarios: [] });
+            data.push({ title: "↳ Die Kreuzigung & Verteilung der Kleider", mt: "27,33-38", mk: "15,22-28", lk: "23,33-34", jh: "19,18-24", scenarios: [] });
+            data.push({ title: "↳ Der Spott & Der reumütige Schächer", mt: "27,39-44", mk: "15,29-32", lk: "23,35-43", jh: "", scenarios: [] });
+            data.push({ title: "↳ Maria und Johannes unterm Kreuz", mt: "", mk: "", lk: "", jh: "19,25-27", scenarios: [] });
+            data.push({ title: "↳ Finsternis & Jesu Gottverlassenheit", mt: "27,45-49", mk: "15,33-36", lk: "23,44-45", jh: "", scenarios: [] });
+            data.push({ title: "↳ Der Tod Jesu & der zerrissene Vorhang", mt: "27,50-56", mk: "15,37-41", lk: "23,46-49", jh: "19,28-30", scenarios: [] });
 
             data.push({ title: "Grablegung & Grabeswache", mt: "27,57-66", mk: "15,42-47", lk: "23,50-56", jh: "19,38-42", scenarios: [] });
             data.push({ title: "Die Auferstehung & Die leere Gruft", mt: "28,1-8", mk: "16,1-8", lk: "24,1-12", jh: "20,1-10", scenarios: [] });
