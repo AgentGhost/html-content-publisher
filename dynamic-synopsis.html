@@ -708,14 +708,17 @@
                     }
 
                     const formatText = (text) => text.replace(/\*/g, '<span class="text-emerald-600 font-bold text-lg leading-none" title="Text verschoben aufgrund der gewählten Theorie im Labor">*</span>');
+                    
+                    // Neue Funktion: Fügt das Buch-Kürzel kopierbar (aber optisch leicht abgesetzt) davor ein
+                    const formatCell = (text, book) => text ? `<span class="text-stone-400 font-semibold select-all">${book}</span> ${formatText(text)}` : '-';
 
                     tr.innerHTML = `
                         <td class="px-4 py-3 whitespace-nowrap text-stone-500 font-mono text-xs font-bold">${item.id}</td>
                         <td class="px-4 py-3 text-stone-900 ${isMergedTarget ? 'font-bold' : 'font-medium'}">${item.title}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatText(item.mt || '-')}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatText(item.mk || '-')}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatText(item.lk || '-')}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatText(item.jh || '-')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.mt, 'Mt')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.mk, 'Mk')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.lk, 'Lk')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.jh, 'Joh')}</td>
                         <td class="px-4 py-3 whitespace-nowrap">${scenarioBadge}</td>
                     `;
                     tbody.appendChild(tr);
