@@ -86,7 +86,7 @@
                     Bei scheinbaren Widersprüchen in Ort oder Zeit ist in unserem "Labor" standardmäßig die <strong>konservative, traditionell-harmonisierende Sichtweise (Theorie A)</strong> voreingestellt. Diese vertraut auf die historische Zuverlässigkeit der Berichte.
                 </p>
                 <p class="text-stone-700">
-                    <strong>Zur Textkritik:</strong> Einige Szenarien behandeln Textpassagen, die in modernen kritischen Ausgaben (Nestle-Aland) oft fehlen. Unsere Tabelle nutzt als Standard (Theorie A) den <strong>Textus Receptus (TR)</strong> bzw. den überlieferten Mehrheitstext, um den vollen biblischen Textschatz zu erhalten. Wer die Auslassungen der modernen Textkritik prüfen möchte, kann Theorie B anwählen – die entsprechenden Verse werden dann in der Tabelle <span class="line-through text-stone-400">durchgestrichen</span> dargestellt.
+                    <strong>Zur Textkritik:</strong> Einige Szenarien behandeln Textpassagen, die in modernen kritischen Ausgaben (Nestle-Aland) oft fehlen. Unsere Tabelle nutzt als Standard (Theorie A) den <strong>Textus Receptus (TR)</strong> bzw. den überlieferten Mehrheitstext. Wer die Auslassungen prüfen möchte, kann Theorie B anwählen – die entsprechenden Verse werden dann in der Tabelle <span class="line-through text-stone-400">durchgestrichen</span> dargestellt.
                 </p>
             </div>
         </header>
@@ -110,7 +110,7 @@
                     </div>
                     <div class="bg-stone-800 p-4 rounded-lg text-stone-200 shadow-md">
                         <h3 class="font-bold text-lg text-emerald-500">&#9888; Prinzip des Texterhalts</h3>
-                        <p class="mt-1 text-sm">Wenn Sie unten Theorien zusammenführen, wird <strong>kein Bibeltext gelöscht</strong>! Stellenangaben werden auf der Zeitachse lediglich verschoben (*). Wenn Sie textkritische Streichungen (Nestle-Aland) aktivieren, wird der Text visuell durchgestrichen, bleibt aber nachvollziehbar.</p>
+                        <p class="mt-1 text-sm">Wenn Sie unten Theorien zusammenführen, wird <strong>kein Bibeltext gelöscht</strong>! Stellenangaben werden auf der Zeitachse lediglich verschoben (*). Wenn Sie textkritische Streichungen aktivieren, wird der Text visuell durchgestrichen, bleibt aber nachvollziehbar.</p>
                     </div>
                 </div>
             </div>
@@ -129,6 +129,13 @@
                 <div class="relative w-full sm:w-1/3">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">&#128269;</span>
                     <input type="text" id="searchInput" placeholder="Ereignis suchen..." class="pl-10 pr-4 py-2 border border-stone-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 w-full shadow-sm">
+                </div>
+                
+                <!-- NEU: Roter Lese-Pfad Toggle Button -->
+                <div>
+                    <button id="readingPathBtn" onclick="toggleReadingPath()" class="whitespace-nowrap bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold py-2 px-4 rounded-lg shadow-sm transition-all border border-stone-300 flex items-center gap-2" title="Hebt für jedes Ereignis das beste Evangelium hervor, um die Geschichte einmal komplett ohne Dubletten durchzulesen.">
+                        📖 Roter Lese-Pfad: Aus
+                    </button>
                 </div>
             </div>
 
@@ -202,6 +209,8 @@
             "SC-09": "A", "SC-10": "A", "SC-11": "A", "SC-12": "A",
             "SC-13": "A", "SC-14": "A", "SC-15": "A", "SC-16": "A", "SC-17": "A"
         };
+        
+        let isReadingPathActive = false;
 
         const dynamicScenarios = {
             "SC-01": {
@@ -343,6 +352,59 @@
         };
 
         let myChart = null;
+
+        // Toggle Funktion für den Lesepfad
+        function toggleReadingPath() {
+            isReadingPathActive = !isReadingPathActive;
+            const btn = document.getElementById('readingPathBtn');
+            
+            if (isReadingPathActive) {
+                btn.classList.remove('bg-stone-100', 'text-stone-700', 'border-stone-300', 'hover:bg-stone-200');
+                btn.classList.add('bg-red-600', 'text-white', 'border-red-700', 'shadow-inner', 'hover:bg-red-700');
+                btn.innerHTML = '📖 Roter Lese-Pfad: Ein';
+            } else {
+                btn.classList.remove('bg-red-600', 'text-white', 'border-red-700', 'shadow-inner', 'hover:bg-red-700');
+                btn.classList.add('bg-stone-100', 'text-stone-700', 'border-stone-300', 'hover:bg-stone-200');
+                btn.innerHTML = '📖 Roter Lese-Pfad: Aus';
+            }
+            
+            updateTableAndDashboard();
+        }
+
+        // Ermittelt das bevorzugte Evangelium für einen flüssigen, dublettenfreien Lesefluss
+        function getPreferredGospel(item) {
+            // Harte Ausnahmen für ikonische Texte (die wir beim Durchlesen nicht überspringen wollen)
+            if (item.title.includes("Bergpredigt")) return 'mt';
+            if (item.title.includes("Vaterunser")) return 'mt';
+            if (item.title.includes("Stammbaum der königlichen")) return 'mt';
+            if (item.title.includes("Flucht nach Ägypten")) return 'mt';
+            if (item.title.includes("Magier")) return 'mt';
+            if (item.title.includes("Feldrede")) return 'lk';
+            if (item.title.includes("Barmherziger Samariter")) return 'lk';
+            if (item.title.includes("Verlorenen Sohn")) return 'lk';
+            
+            // NEU: Maßgeschneiderter Pfad durch die Ölbergrede (Variabilität & Sondergut nutzen)
+            if (item.title.includes("Ölbergrede (Gesamtübersicht)")) return 'mt';
+            if (item.title.includes("Tempelzerstörung & Jüngerfragen")) return 'mk'; // Markus nennt Petrus, Jakobus, Johannes, Andreas namentlich
+            if (item.title.includes("Anfang der Wehen")) return 'mt'; 
+            if (item.title.includes("Belagerung Jerusalems")) return 'lk'; // Lukas fokussiert spezifisch auf die Heere um Jerusalem
+            if (item.title.includes("Falsche Propheten & Kommen")) return 'mk'; // Kraftvolle Dramaturgie bei Markus
+            if (item.title.includes("Ermahnung zur Wachsamkeit")) return 'mt'; // Matthäus ist hier extrem ausführlich
+            
+            // Generelle Priorität: Johannes (oft einzigartig) -> Lukas (sehr detailliert) -> Markus (lebendig) -> Matthäus
+            if (item.jh && !item.jh.includes('line-through')) return 'jh';
+            if (item.lk && !item.lk.includes('line-through')) return 'lk';
+            if (item.mk && !item.mk.includes('line-through')) return 'mk';
+            if (item.mt && !item.mt.includes('line-through')) return 'mt';
+            
+            // Fallbacks für den Fall, dass alle Einträge textkritisch gestrichen sind, aber existieren
+            if (item.jh) return 'jh';
+            if (item.lk) return 'lk';
+            if (item.mk) return 'mk';
+            if (item.mt) return 'mt';
+            
+            return null;
+        }
 
         // Helper Function for Text Criticism (TR vs NA) 
         function tc(verseText, scenarioId, validOptions = ["A"]) {
@@ -539,7 +601,19 @@
             data.push({ title: "Vollmachtsfrage & Weingärtner", mt: "21,23-46", mk: "11,27-12,12", lk: "20,1-19", jh: "", scenarios: [] });
             data.push({ title: "Steuerfrage & Auferstehung", mt: "22,1-46", mk: "12,13-37", lk: "20,20-44", jh: "", scenarios: [] });
             data.push({ title: "Weherufe gegen die Pharisäer", mt: "23,1-39", mk: "12,38-44", lk: "20,45-21,4", jh: "", scenarios: [] });
-            data.push({ title: "Die Ölbergrede (Endzeit)", mt: "24,1-25,46", mk: "13,1-37", lk: "21,5-38", jh: "", scenarios: [] });
+            
+            // NEU: Detailliert aufgeschlüsselte Ölbergrede für dynamischen Lese-Pfad
+            data.push({ title: "Die Ölbergrede (Gesamtübersicht)", mt: "24,1-25,46", mk: "13,1-37", lk: "21,5-38", jh: "", scenarios: [] });
+            data.push({ title: "↳ Tempelzerstörung & Jüngerfragen", mt: "24,1-3", mk: "13,1-4", lk: "21,5-7", jh: "", scenarios: [] });
+            data.push({ title: "↳ Anfang der Wehen & Verfolgung", mt: "24,4-14", mk: "13,5-13", lk: "21,8-19", jh: "", scenarios: [] });
+            data.push({ title: "↳ Gräuel der Verwüstung / Belagerung Jerusalems", mt: "24,15-22", mk: "13,14-20", lk: "21,20-24", jh: "", scenarios: [] });
+            data.push({ title: "↳ Falsche Propheten & Kommen des Menschensohns", mt: "24,23-31", mk: "13,21-27", lk: "21,25-28", jh: "", scenarios: [] });
+            data.push({ title: "↳ Gleichnis vom Feigenbaum", mt: "24,32-35", mk: "13,28-31", lk: "21,29-33", jh: "", scenarios: [] });
+            data.push({ title: "↳ Ermahnung zur Wachsamkeit", mt: "24,36-51", mk: "13,32-37", lk: "21,34-36", jh: "", scenarios: [] });
+            data.push({ title: "↳ Die zehn Jungfrauen", mt: "25,1-13", mk: "", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Die anvertrauten Talente", mt: "25,14-30", mk: "", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "↳ Das Weltgericht (Schafe und Böcke)", mt: "25,31-46", mk: "", lk: "", jh: "", scenarios: [] });
+
             data.push({ title: "Verrat des Judas", mt: "26,1-5; 26,14-16", mk: "14,1-2; 14,10-11", lk: "22,1-6", jh: "", scenarios: [] });
 
             // Abendmahl (SC-13)
@@ -709,16 +783,33 @@
 
                     const formatText = (text) => text.replace(/\*/g, '<span class="text-emerald-600 font-bold text-lg leading-none" title="Text verschoben aufgrund der gewählten Theorie im Labor">*</span>');
                     
-                    // Neue Funktion: Fügt das Buch-Kürzel kopierbar (aber optisch leicht abgesetzt) davor ein
-                    const formatCell = (text, book) => text ? `<span class="text-stone-400 font-semibold select-all">${book}</span> ${formatText(text)}` : '-';
+                    // Berechne den Roten Pfad für diese Zeile, wenn er aktiv ist
+                    const preferredGospelKey = isReadingPathActive ? getPreferredGospel(item) : null;
+
+                    // Erstellt die Tabellenzelle. Wenn der Rote Pfad aktiv ist, wird hervorgehoben oder ausgegraut.
+                    const formatCell = (text, bookDisplay, bookKey) => {
+                        if (!text) return '-';
+                        let cellHtml = `<span class="text-stone-400 font-semibold select-all">${bookDisplay}</span> ${formatText(text)}`;
+                        
+                        if (isReadingPathActive) {
+                            if (bookKey === preferredGospelKey) {
+                                return `<div class="bg-red-50 border border-red-400 rounded p-1.5 -m-1.5 shadow-sm text-red-900 font-bold relative transition-all duration-300 z-10">
+                                            ${cellHtml}
+                                        </div>`;
+                            } else {
+                                return `<div class="opacity-25 grayscale transition-opacity duration-300 hover:opacity-100 hover:grayscale-0">${cellHtml}</div>`;
+                            }
+                        }
+                        return cellHtml;
+                    };
 
                     tr.innerHTML = `
                         <td class="px-4 py-3 whitespace-nowrap text-stone-500 font-mono text-xs font-bold">${item.id}</td>
                         <td class="px-4 py-3 text-stone-900 ${isMergedTarget ? 'font-bold' : 'font-medium'}">${item.title}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.mt, 'Mt')}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.mk, 'Mk')}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.lk, 'Lk')}</td>
-                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.jh, 'Joh')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.mt, 'Mt', 'mt')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.mk, 'Mk', 'mk')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.lk, 'Lk', 'lk')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight" style="min-width:100px">${formatCell(item.jh, 'Joh', 'jh')}</td>
                         <td class="px-4 py-3 whitespace-nowrap">${scenarioBadge}</td>
                     `;
                     tbody.appendChild(tr);
