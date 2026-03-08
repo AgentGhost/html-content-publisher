@@ -56,7 +56,7 @@
                 </div>
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center">
-                    <button onclick="toggleMobileMenu()" class="text-stone-300 hover:text-white focus:outline-none p-2">
+                    <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="text-stone-300 hover:text-white focus:outline-none p-2">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
@@ -65,7 +65,7 @@
             </div>
         </div>
         <!-- Mobile Nav Menu -->
-        <div id="mobileMenu" class="hidden md:hidden bg-stone-800 border-t border-stone-700 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-lg">
+        <div id="mobileMenu" class="hidden md:hidden bg-stone-800 border-t border-stone-700 px-2 pt-2 pb-3 space-y-1 sm:px-3 shadow-lg absolute w-full z-40">
             <button onclick="scrollToSection('dashboard'); toggleMobileMenu()" class="block w-full text-left hover:bg-stone-700 px-3 py-2 rounded-md text-base font-medium text-stone-200 transition">Übersicht</button>
             <button onclick="scrollToSection('harmonie'); toggleMobileMenu()" class="block w-full text-left hover:bg-stone-700 px-3 py-2 rounded-md text-base font-medium text-stone-200 transition">Chronologie-Tabelle</button>
             <button onclick="scrollToSection('szenarien'); toggleMobileMenu()" class="block w-full text-left hover:bg-stone-700 px-3 py-2 rounded-md text-base font-medium text-stone-200 transition">Labor & Theorien</button>
@@ -86,7 +86,7 @@
                     Bei scheinbaren Widersprüchen in Ort oder Zeit ist in unserem "Labor" standardmäßig die <strong>konservative, traditionell-harmonisierende Sichtweise (Theorie A)</strong> voreingestellt. Diese vertraut auf die historische Zuverlässigkeit der Berichte.
                 </p>
                 <p class="text-stone-700">
-                    <strong>Zur Textkritik:</strong> Einige Szenarien behandeln Textpassagen, die in modernen kritischen Ausgaben (Nestle-Aland) oft fehlen. Unsere Tabelle nutzt als Standard (Theorie A) den <strong>Textus Receptus (TR)</strong> bzw. den überlieferten Mehrheitstext, um den vollen biblischen Textschatz zu erhalten. Wer die Auslassungen der modernen Textkritik prüfen möchte, kann Theorie B (oder C/D) anwählen – die entsprechenden Verse werden dann in der Tabelle <span class="line-through text-stone-400">durchgestrichen</span> dargestellt.
+                    <strong>Zur Textkritik:</strong> Einige Szenarien behandeln Textpassagen, die in modernen kritischen Ausgaben (Nestle-Aland) oft fehlen. Unsere Tabelle nutzt als Standard (Theorie A) den <strong>Textus Receptus (TR)</strong> bzw. den überlieferten Mehrheitstext, um den vollen biblischen Textschatz zu erhalten. Wer die Auslassungen der modernen Textkritik prüfen möchte, kann Theorie B anwählen – die entsprechenden Verse werden dann in der Tabelle <span class="line-through text-stone-400">durchgestrichen</span> dargestellt.
                 </p>
             </div>
         </header>
@@ -156,11 +156,16 @@
 
         <!-- UNIFIED LAB & SCENARIO DIRECTORY -->
         <section id="szenarien" class="bg-stone-900 text-stone-50 rounded-xl shadow-xl p-6 md:p-8 mb-16 border-t-4 border-emerald-600">
-            <div class="mb-8 border-b border-stone-700 pb-4">
-                <h2 class="text-2xl font-bold text-emerald-500 flex items-center gap-2">
-                    <span>&#9881;</span> Historiographisches & Textkritisches Labor (16 Szenarien)
-                </h2>
-                <p class="text-stone-300 mt-2 text-sm md:text-base">Hier definieren Sie die Architektur der Tabelle. <strong>Theorie A (Smaragdgrün)</strong> vertritt stets die verlässliche, historisch-harmonisierende Erklärung bzw. den vollständigen Textus Receptus.</p>
+            <div class="mb-8 border-b border-stone-700 pb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-emerald-500 flex items-center gap-2">
+                        <span>&#9881;</span> Historiographisches & Textkritisches Labor (17 Szenarien)
+                    </h2>
+                    <p class="text-stone-300 mt-2 text-sm md:text-base">Hier definieren Sie die Architektur der Tabelle. <strong>Theorie A (Smaragdgrün)</strong> vertritt stets die verlässliche, historisch-harmonisierende Erklärung bzw. den vollständigen Textus Receptus.</p>
+                </div>
+                <button onclick="resetAllToA()" class="whitespace-nowrap bg-stone-700 hover:bg-emerald-600 text-stone-100 font-bold py-2.5 px-5 rounded-lg shadow transition-colors border border-stone-600 hover:border-emerald-500 flex items-center gap-2">
+                    <span class="text-lg leading-none">&#8634;</span> Alle auf Theorie A setzen
+                </button>
             </div>
             
             <div id="scenariosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -179,14 +184,23 @@
             document.getElementById('mobileMenu').classList.toggle('hidden');
         }
 
+        // Close mobile menu on click outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.getElementById('mobileMenuBtn');
+            if (menu && btn && !menu.classList.contains('hidden') && !menu.contains(event.target) && !btn.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
         // ---------------------------------------------------------
-        // 1. STATE MANAGEMENT (16 Scenarios)
+        // 1. STATE MANAGEMENT (17 Scenarios default to "A")
         // ---------------------------------------------------------
         let configState = {
             "SC-01": "A", "SC-02": "A", "SC-03": "A", "SC-04": "A", 
             "SC-05": "A", "SC-06": "A", "SC-07": "A", "SC-08": "A", 
             "SC-09": "A", "SC-10": "A", "SC-11": "A", "SC-12": "A",
-            "SC-13": "A", "SC-14": "A", "SC-15": "A", "SC-16": "A"
+            "SC-13": "A", "SC-14": "A", "SC-15": "A", "SC-16": "A", "SC-17": "A"
         };
 
         const dynamicScenarios = {
@@ -311,13 +325,19 @@
                 }
             },
             "SC-16": {
-                title: "Der Auferstandene: Orte & langer Markusschluss",
-                desc: "Kombiniert das theologische Problem der Orte (Lk = Jerusalem vs. Mt = Galiläa) mit der Textkritik am Markusschluss (Mk 16,9-20).",
+                title: "Erscheinungsorte des Auferstandenen",
+                desc: "Lukas fokussiert sich auf Jerusalem, Matthäus auf Galiläa, Johannes verbindet beides.",
                 options: {
-                    "A": { label: "Traditionell & TR-Text", text: "Historische Reiseroute (getrennte Zeilen für Orte) UND der Markusschluss ist echt (angezeigt)." },
-                    "B": { label: "Traditionell & NA-Text", text: "Historische Reiseroute (getrennte Zeilen für Orte) ABER Markusschluss ist sekundär (durchgestrichen)." },
-                    "C": { label: "Kritisch & TR-Text", text: "Sich ausschließende Gemeindetraditionen (Orte in einer Zeile vereint) ABER Markusschluss ist echt (angezeigt)." },
-                    "D": { label: "Kritisch & NA-Text", text: "Sich ausschließende Gemeindetraditionen (Orte in einer Zeile vereint) UND Markusschluss ist sekundär (durchgestrichen)." }
+                    "A": { label: "Traditionell: Historische Route", text: "Die Jünger waren in Jerusalem, wanderten nach Galiläa und kehrten zurück. (Texte nach Route getrennt)." },
+                    "B": { label: "Kritisch: Unabhängige Traditionen", text: "Die Evangelien nutzen sich ausschließende Gemeindetraditionen. (Texte zusammengefasst)." }
+                }
+            },
+            "SC-17": {
+                title: "Der lange Markusschluss (Mk 16,9-20)",
+                desc: "Dieser Abschnitt fehlt in den ältesten Papyrus-Handschriften (Sinaiticus, Vaticanus).",
+                options: {
+                    "A": { label: "Traditionell: Textus Receptus (Original)", text: "Der lange Schluss ist inspiriert und gehört vollumfänglich zur Bibel. (Wird regulär angezeigt)." },
+                    "B": { label: "Kritisch: Nestle-Aland (Späterer Zusatz)", text: "Der Text wurde später von der Gemeinde angefügt, um das abrupte Ende zu glätten. (Wird durchgestrichen)." }
                 }
             }
         };
@@ -326,7 +346,6 @@
 
         // Helper Function for Text Criticism (TR vs NA) 
         function tc(verseText, scenarioId, validOptions = ["A"]) {
-            // Vergleicht, ob die aktuelle Konfiguration in den "gültigen Optionen" enthalten ist.
             if (validOptions.includes(configState[scenarioId])) {
                 return verseText;
             } else {
@@ -334,230 +353,250 @@
             }
         }
 
+        // Verschmilzt zusammenhängende Blöcke komplett (A) oder splittet sie sauber mit Semikolon (B)
+        function tcBlock(mergedText, prefix, verse, suffix, scenarioId, validOptions = ["A"]) {
+            if (validOptions.includes(configState[scenarioId])) {
+                return mergedText; 
+            } else {
+                return `${prefix}; <span class="text-stone-400 line-through decoration-stone-500 decoration-2" title="Fehlt in modernen kritischen Textausgaben (Nestle-Aland)">${verse}</span>; ${suffix}`;
+            }
+        }
+
         function getTableData() {
             let data = [];
             
-            data.push({ title: "Prolog", mt: "", mk: "", lk: "1,1-4", jh: "1,1-18", scenario: null });
+            data.push({ title: "Prolog", mt: "", mk: "", lk: "1,1-4", jh: "1,1-18", scenarios: [] });
             
             // SC-01: Stammbäume
             if (configState["SC-01"] === "B") { 
-                data.push({ title: "Die Stammbäume Jesu (Konstruiert/Zusammengeführt)", mt: "1,1-17", mk: "", lk: "3,23-38*", jh: "", scenario: "SC-01" });
+                data.push({ title: "Die Stammbäume Jesu (Konstruiert/Zusammengeführt)", mt: "1,1-17", mk: "", lk: "3,23-38*", jh: "", scenarios: ["SC-01"] });
             } else { 
-                data.push({ title: "Stammbaum der königlichen Linie (Josef)", mt: "1,1-17", mk: "", lk: "", jh: "", scenario: "SC-01" });
+                data.push({ title: "Stammbaum der königlichen Linie (Josef)", mt: "1,1-17", mk: "", lk: "", jh: "", scenarios: ["SC-01"] });
             }
 
-            data.push({ title: "Ankündigung der Geburt von Johannes und Jesus", mt: "1,18-25", mk: "", lk: "1,5-56", jh: "", scenario: null });
-            data.push({ title: "Geburt Johannes des Täufers", mt: "", mk: "", lk: "1,57-80", jh: "", scenario: null });
+            data.push({ title: "Ankündigung der Geburt von Johannes und Jesus", mt: "1,18-25", mk: "", lk: "1,5-56", jh: "", scenarios: [] });
+            data.push({ title: "Geburt Johannes des Täufers", mt: "", mk: "", lk: "1,57-80", jh: "", scenarios: [] });
             
-            // Geburt Jesu und Magier (angepasst an Kapitel 1 und 2)
-            data.push({ title: "Geburt Jesu & Anbetung der Hirten", mt: "1,25", mk: "", lk: "2,1-20", jh: "", scenario: null });
-            data.push({ title: "Darstellung im Tempel", mt: "", mk: "", lk: "2,21-39", jh: "", scenario: null });
-            data.push({ title: "Anbetung der Magier, Flucht nach Ägypten", mt: "2,1-23", mk: "", lk: "", jh: "", scenario: null });
+            // Geburt Jesu (Matthäus schweigt zur direkten Geburt, behandelt nur Vorgeschichte in 1,18-25 und Magier in 2)
+            data.push({ title: "Geburt Jesu & Anbetung der Hirten", mt: "", mk: "", lk: "2,1-20", jh: "", scenarios: [] });
+            data.push({ title: "Darstellung im Tempel", mt: "", mk: "", lk: "2,21-39", jh: "", scenarios: [] });
+            data.push({ title: "Anbetung der Magier, Flucht nach Ägypten", mt: "2,1-23", mk: "", lk: "", jh: "", scenarios: [] });
             
-            data.push({ title: "Der zwölfjährige Jesus im Tempel", mt: "", mk: "", lk: "2,40-52", jh: "", scenario: null });
-            data.push({ title: "Auftreten Johannes des Täufers & Taufe Jesu", mt: "3,1-17", mk: "1,1-11", lk: "3,1-22", jh: "1,19-34", scenario: null });
+            data.push({ title: "Der zwölfjährige Jesus im Tempel", mt: "", mk: "", lk: "2,40-52", jh: "", scenarios: [] });
+            data.push({ title: "Auftreten Johannes des Täufers & Taufe Jesu", mt: "3,1-17", mk: "1,1-11", lk: "3,1-22", jh: "1,19-34", scenarios: [] });
             
             if (configState["SC-01"] === "A") {
-                data.push({ title: "Stammbaum der biologischen Linie (Maria/Natan)", mt: "", mk: "", lk: "3,23-38", jh: "", scenario: "SC-01" });
+                data.push({ title: "Stammbaum der biologischen Linie (Maria/Natan)", mt: "", mk: "", lk: "3,23-38", jh: "", scenarios: ["SC-01"] });
             }
 
-            data.push({ title: "Versuchung Jesu in der Wüste", mt: "4,1-11", mk: "1,12-13", lk: "4,1-13", jh: "", scenario: null });
+            data.push({ title: "Versuchung Jesu in der Wüste", mt: "4,1-11", mk: "1,12-13", lk: "4,1-13", jh: "", scenarios: [] });
 
             if (configState["SC-02"] === "A") {
-                data.push({ title: "Erste Begegnung mit den Jüngern (Jordantal)", mt: "", mk: "", lk: "", jh: "1,35-51", scenario: "SC-02" });
+                data.push({ title: "Erste Begegnung mit den Jüngern (Jordantal)", mt: "", mk: "", lk: "", jh: "1,35-51", scenarios: ["SC-02"] });
             }
 
-            data.push({ title: "Hochzeit zu Kana", mt: "", mk: "", lk: "", jh: "2,1-12", scenario: null });
+            data.push({ title: "Hochzeit zu Kana", mt: "", mk: "", lk: "", jh: "2,1-12", scenarios: [] });
 
             if (configState["SC-03"] === "A") {
-                data.push({ title: "Erste Tempelreinigung (Frühdatierung)", mt: "", mk: "", lk: "", jh: "2,13-25", scenario: "SC-03" });
+                data.push({ title: "Erste Tempelreinigung (Frühdatierung)", mt: "", mk: "", lk: "", jh: "2,13-25", scenarios: ["SC-03"] });
             }
 
-            data.push({ title: "Gespräch mit Nikodemus & Zeugnis des Täufers", mt: "", mk: "", lk: "", jh: "3,1-36", scenario: null });
-            data.push({ title: "Die Samaritanerin am Brunnen & Heilung des Sohnes", mt: "", mk: "", lk: "", jh: "4,1-54", scenario: null });
-            data.push({ title: "Rückkehr nach Galiläa", mt: "4,12-17", mk: "1,14-15", lk: "4,14-15", jh: "", scenario: null });
+            data.push({ title: "Gespräch mit Nikodemus & Zeugnis des Täufers", mt: "", mk: "", lk: "", jh: "3,1-36", scenarios: [] });
+            data.push({ title: "Die Samaritanerin am Brunnen & Heilung des Sohnes", mt: "", mk: "", lk: "", jh: "4,1-54", scenarios: [] });
+            data.push({ title: "Rückkehr nach Galiläa", mt: "4,12-17", mk: "1,14-15", lk: "4,14-15", jh: "", scenarios: [] });
             
             if (configState["SC-04"] === "A") {
-                data.push({ title: "Erste Verwerfung in Nazareth", mt: "", mk: "", lk: "4,16-30", jh: "", scenario: "SC-04" });
+                data.push({ title: "Erste Verwerfung in Nazareth", mt: "", mk: "", lk: "4,16-30", jh: "", scenarios: ["SC-04"] });
             }
 
             data.push({
                 title: configState["SC-02"] === "A" ? "Berufung der Jünger zum Vollzeitdienst (am See)" : "Berufung der Jünger (Zusammengeführt)",
                 mt: "4,18-22", mk: "1,16-20", lk: "5,1-11",
                 jh: configState["SC-02"] === "B" ? "1,35-51*" : "",
-                scenario: configState["SC-02"] === "B" ? "SC-02" : null
+                scenarios: ["SC-02"]
             });
 
-            data.push({ title: "Heilungen in Kapernaum (Sabbat, Menge)", mt: "8,14-17", mk: "1,21-34", lk: "4,31-41", jh: "", scenario: null });
-            data.push({ title: "Erste Predigtreise & Heilung eines Aussätzigen", mt: "8,1-4", mk: "1,35-45", lk: "4,42-44.5,12-16", jh: "", scenario: null });
-            data.push({ title: "Heilung des Gelähmten & Berufung des Levi", mt: "9,1-13", mk: "2,1-17", lk: "5,17-32", jh: "", scenario: null });
-            data.push({ title: "Frage nach dem Fasten", mt: "9,14-17", mk: "2,18-22", lk: "5,33-39", jh: "", scenario: null });
+            data.push({ title: "Heilungen in Kapernaum (Sabbat, Menge)", mt: "8,14-17", mk: "1,21-34", lk: "4,31-41", jh: "", scenarios: [] });
+            data.push({ title: "Erste Predigtreise & Heilung eines Aussätzigen", mt: "8,1-4", mk: "1,35-45", lk: "4,42-44; 5,12-16", jh: "", scenarios: [] });
+            data.push({ title: "Heilung des Gelähmten & Berufung des Levi", mt: "9,1-13", mk: "2,1-17", lk: "5,17-32", jh: "", scenarios: [] });
+            data.push({ title: "Frage nach dem Fasten", mt: "9,14-17", mk: "2,18-22", lk: "5,33-39", jh: "", scenarios: [] });
             
-            // Bethesda (SC-05 Textkritik)
-            data.push({ title: "Heilung am Teich Bethesda", mt: "", mk: "", lk: "", jh: `5,1-3.5-47`, scenario: null });
-            data.push({ title: "Herabsteigen des Engels in Bethesda", mt: "", mk: "", lk: "", jh: tc("5,4", "SC-05"), scenario: "SC-05" });
+            // Bethesda (SC-05 Textkritik als Insert)
+            data.push({ title: "Heilung am Teich Bethesda", mt: "", mk: "", lk: "", jh: tcBlock("5,1-47", "5,1-3", "5,4", "5,5-47", "SC-05"), scenarios: ["SC-05"] });
 
-            data.push({ title: "Sabbatkonflikte (Ährenraufen & verdorrte Hand)", mt: "12,1-14", mk: "2,23-3,6", lk: "6,1-11", jh: "", scenario: null });
-            data.push({ title: "Rückzug an den See & Wahl der zwölf Apostel", mt: "12,15-21.10,2-4", mk: "3,7-19", lk: "6,12-16", jh: "", scenario: null });
+            data.push({ title: "Sabbatkonflikte (Ährenraufen & verdorrte Hand)", mt: "12,1-14", mk: "2,23-3,6", lk: "6,1-11", jh: "", scenarios: [] });
+            data.push({ title: "Rückzug an den See & Wahl der zwölf Apostel", mt: "12,15-21; 10,2-4", mk: "3,7-19", lk: "6,12-16", jh: "", scenarios: [] });
 
-            // Lehrrede (SC-06)
-            data.push({ title: "Die Große Lehrrede (Bergpredigt / Feldrede)", mt: "5,1-7,29", mk: "", lk: "6,17-49", jh: "", scenario: "SC-06" });
-            
-            // Vaterunser Doxologie (SC-07 Textkritik)
-            let sc07Title = configState["SC-07"] === "A" ? "Vaterunser-Doxologie (Denn dein ist das Reich...)" : "Vaterunser-Doxologie (Gestrichen nach NA)";
-            data.push({ title: sc07Title, mt: tc("6,13b", "SC-07"), mk: "", lk: "", jh: "", scenario: "SC-07" });
+            // Lehrrede (SC-06) und Doxologie (SC-07) als Insert
+            if (configState["SC-06"] === "A") {
+                data.push({ title: "Die Bergpredigt (auf dem Berg)", mt: tcBlock("5,1-7,29", "5,1-6,13", "6,13b", "6,14-7,29", "SC-07"), mk: "", lk: "", jh: "", scenarios: ["SC-06", "SC-07"] });
+                data.push({ title: "Die Feldrede (auf der Ebene)", mt: "", mk: "", lk: "6,17-49", jh: "", scenarios: ["SC-06"] });
+            } else {
+                data.push({ title: "Die Große Lehrrede (Bergpredigt & Feldrede vereint)", mt: tcBlock("5,1-7,29", "5,1-6,13", "6,13b", "6,14-7,29", "SC-07"), mk: "", lk: "6,17-49*", jh: "", scenarios: ["SC-06", "SC-07"] });
+            }
 
-            data.push({ title: "Heilung des Knechts & Jüngling von Nain", mt: "8,5-13", mk: "", lk: "7,1-17", jh: "", scenario: null });
-            data.push({ title: "Anfrage des Täufers", mt: "11,2-19", mk: "", lk: "7,18-35", jh: "", scenario: null });
+            data.push({ title: "Heilung des Knechts & Jüngling von Nain", mt: "8,5-13", mk: "", lk: "7,1-17", jh: "", scenarios: [] });
+            data.push({ title: "Anfrage des Täufers", mt: "11,2-19", mk: "", lk: "7,18-35", jh: "", scenarios: [] });
             
             // Salbung (SC-08)
             if (configState["SC-08"] === "A") {
-                data.push({ title: "Salbung durch die Sünderin aus Dankbarkeit (Galiläa)", mt: "", mk: "", lk: "7,36-50", jh: "", scenario: "SC-08" });
+                data.push({ title: "Salbung durch die Sünderin aus Dankbarkeit (Galiläa)", mt: "", mk: "", lk: "7,36-50", jh: "", scenarios: ["SC-08"] });
             }
             
-            data.push({ title: "Frauen in der Nachfolge", mt: "", mk: "", lk: "8,1-3", jh: "", scenario: null });
-            data.push({ title: "Beelzebul-Streit & Jesu wahre Verwandte", mt: "12,22-50", mk: "3,20-35", lk: "8,19-21.11,14-23", jh: "", scenario: null });
-            data.push({ title: "Gleichnisrede am See (Sämann, Unkraut...)", mt: "13,1-52", mk: "4,1-34", lk: "8,4-18", jh: "", scenario: null });
-            data.push({ title: "Sturmstillung", mt: "8,23-27", mk: "4,35-41", lk: "8,22-25", jh: "", scenario: null });
+            data.push({ title: "Frauen in der Nachfolge", mt: "", mk: "", lk: "8,1-3", jh: "", scenarios: [] });
+            data.push({ title: "Beelzebul-Streit & Jesu wahre Verwandte", mt: "12,22-50", mk: "3,20-35", lk: "8,19-21; 11,14-23", jh: "", scenarios: [] });
+            data.push({ title: "Gleichnisrede am See (Sämann, Unkraut...)", mt: "13,1-52", mk: "4,1-34", lk: "8,4-18", jh: "", scenarios: [] });
+            data.push({ title: "Sturmstillung", mt: "8,23-27", mk: "4,35-41", lk: "8,22-25", jh: "", scenarios: [] });
             
             // Gerasa (SC-09)
             if (configState["SC-09"] === "A") {
-                data.push({ title: "Heilung der Besessenen (Region Gadara/Gerasa)", mt: "8,28-34", mk: "5,1-20", lk: "8,26-39", jh: "", scenario: "SC-09" });
+                data.push({ title: "Heilung der Besessenen (Region Gadara/Gerasa)", mt: "8,28-34", mk: "5,1-20", lk: "8,26-39", jh: "", scenarios: ["SC-09"] });
             } else {
-                data.push({ title: "Heilung zweier Besessener bei Gadara", mt: "8,28-34", mk: "", lk: "", jh: "", scenario: "SC-09" });
-                data.push({ title: "Heilung eines Besessenen bei Gerasa", mt: "", mk: "5,1-20", lk: "8,26-39", jh: "", scenario: "SC-09" });
+                data.push({ title: "Heilung zweier Besessener bei Gadara", mt: "8,28-34", mk: "", lk: "", jh: "", scenarios: ["SC-09"] });
+                data.push({ title: "Heilung eines Besessenen bei Gerasa", mt: "", mk: "5,1-20", lk: "8,26-39", jh: "", scenarios: ["SC-09"] });
             }
             
-            data.push({ title: "Tochter des Jairus & die blutflüssige Frau", mt: "9,18-26", mk: "5,21-43", lk: "8,40-56", jh: "", scenario: null });
-            data.push({ title: "Heilung zweier Blinder und eines Stummen", mt: "9,27-34", mk: "", lk: "", jh: "", scenario: null });
+            data.push({ title: "Tochter des Jairus & die blutflüssige Frau", mt: "9,18-26", mk: "5,21-43", lk: "8,40-56", jh: "", scenarios: [] });
+            data.push({ title: "Heilung zweier Blinder und eines Stummen", mt: "9,27-34", mk: "", lk: "", jh: "", scenarios: [] });
 
             data.push({
                 title: configState["SC-04"] === "A" ? "Zweite Verwerfung in Nazareth" : "Verwerfung in Nazareth (Verschoben/Zusammengeführt)",
                 mt: "13,53-58", mk: "6,1-6",
                 lk: configState["SC-04"] === "B" ? "4,16-30*" : "",
                 jh: "",
-                scenario: configState["SC-04"] === "B" ? "SC-04" : null
+                scenarios: ["SC-04"]
             });
             
-            data.push({ title: "Aussendung der Zwölf", mt: "9,35-10,1.10,5-42", mk: "6,7-13", lk: "9,1-6", jh: "", scenario: configState["SC-11"] === "A" ? null : "SC-11" }); // SC-11 ist Aussendung 70
-            data.push({ title: "Tod Johannes des Täufers", mt: "14,1-12", mk: "6,14-30", lk: "9,7-9", jh: "", scenario: null });
-            data.push({ title: "Speisung der 5000 & Wandel auf dem See", mt: "14,13-33", mk: "6,31-52", lk: "9,10-17", jh: "6,1-21", scenario: null });
-            data.push({ title: "Brot des Lebens", mt: "14,34-36", mk: "6,53-56", lk: "", jh: "6,22-71", scenario: null });
-            data.push({ title: "Die Überlieferung der Ältesten", mt: "15,1-20", mk: "7,1-23", lk: "", jh: "", scenario: null });
-            data.push({ title: "Syrophönizierin & Speisung der 4000", mt: "15,21-39", mk: "7,24-8,9", lk: "", jh: "", scenario: null });
-            data.push({ title: "Zeichenforderung & Blinder in Bethsaida", mt: "16,1-12", mk: "8,10-26", lk: "", jh: "", scenario: null });
+            // Aussendung der Zwölf bekommt auch SC-11 als Basis-Referenz, wenn SC-11 in Option B "hineinrutscht"
+            data.push({ title: "Aussendung der Zwölf", mt: "9,35-10,1; 10,5-42", mk: "6,7-13", lk: "9,1-6", jh: "", scenarios: configState["SC-11"] === "B" ? ["SC-11"] : [] }); 
+            data.push({ title: "Tod Johannes des Täufers", mt: "14,1-12", mk: "6,14-30", lk: "9,7-9", jh: "", scenarios: [] });
+            data.push({ title: "Speisung der 5000 & Wandel auf dem See", mt: "14,13-33", mk: "6,31-52", lk: "9,10-17", jh: "6,1-21", scenarios: [] });
+            data.push({ title: "Brot des Lebens", mt: "14,34-36", mk: "6,53-56", lk: "", jh: "6,22-71", scenarios: [] });
+            data.push({ title: "Die Überlieferung der Ältesten", mt: "15,1-20", mk: "7,1-23", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "Syrophönizierin & Speisung der 4000", mt: "15,21-39", mk: "7,24-8,9", lk: "", jh: "", scenarios: [] });
+            data.push({ title: "Zeichenforderung & Blinder in Bethsaida", mt: "16,1-12", mk: "8,10-26", lk: "", jh: "", scenarios: [] });
 
-            data.push({ title: "Petrusbekenntnis & Erste Leidensankündigung", mt: "16,13-28", mk: "8,27-9,1", lk: "9,18-27", jh: "", scenario: null });
-            data.push({ title: "Verklärung Jesu", mt: "17,1-13", mk: "9,2-13", lk: "9,28-36", jh: "", scenario: null });
-            data.push({ title: "Heilung des Knaben & Tempelsteuer", mt: "17,14-27", mk: "9,14-32", lk: "9,37-45", jh: "", scenario: null });
-            data.push({ title: "Die Gemeinderede (Mt 18)", mt: "18,1-35", mk: "9,33-50", lk: "9,46-50", jh: "", scenario: null });
+            data.push({ title: "Petrusbekenntnis & Erste Leidensankündigung", mt: "16,13-28", mk: "8,27-9,1", lk: "9,18-27", jh: "", scenarios: [] });
+            data.push({ title: "Verklärung Jesu", mt: "17,1-13", mk: "9,2-13", lk: "9,28-36", jh: "", scenarios: [] });
+            data.push({ title: "Heilung des Knaben & Tempelsteuer", mt: "17,14-27", mk: "9,14-32", lk: "9,37-45", jh: "", scenarios: [] });
+            data.push({ title: "Die Gemeinderede (Mt 18)", mt: "18,1-35", mk: "9,33-50", lk: "9,46-50", jh: "", scenarios: [] });
 
-            data.push({ title: "Aufbruch nach Jerusalem", mt: "19,1-2", mk: "10,1", lk: "9,51-62", jh: "", scenario: null });
+            data.push({ title: "Aufbruch nach Jerusalem", mt: "19,1-2", mk: "10,1", lk: "9,51-62", jh: "", scenarios: [] });
             
-            // Laubhüttenfest & Ehebrecherin (SC-10 Textkritik)
-            data.push({ title: "Laubhüttenfest", mt: "", mk: "", lk: "", jh: "7,1-52.8,12-59", scenario: null });
-            data.push({ title: "Die Ehebrecherin (Pericope Adulterae)", mt: "", mk: "", lk: "", jh: tc("7,53-8,11", "SC-10"), scenario: "SC-10" });
+            // Laubhüttenfest & Ehebrecherin (SC-10 Textkritik als Insert)
+            data.push({ title: "Laubhüttenfest & Die Ehebrecherin", mt: "", mk: "", lk: "", jh: tcBlock("7,1-8,59", "7,1-52", "7,53-8,11", "8,12-59", "SC-10"), scenarios: ["SC-10"] });
             
-            data.push({ title: "Heilung des Blindgeborenen & Der gute Hirte", mt: "", mk: "", lk: "", jh: "9,1-10,21", scenario: null });
+            data.push({ title: "Heilung des Blindgeborenen & Der gute Hirte", mt: "", mk: "", lk: "", jh: "9,1-10,21", scenarios: [] });
 
             // Aussendung 70 (SC-11)
             if (configState["SC-11"] === "A") {
-                data.push({ title: "Spätere Aussendung der Siebzig (Judäa)", mt: "", mk: "", lk: "10,1-24", jh: "", scenario: "SC-11" });
+                data.push({ title: "Spätere Aussendung der Siebzig (Judäa)", mt: "", mk: "", lk: "10,1-24", jh: "", scenarios: ["SC-11"] });
             } else {
-                data.push({ title: "Aussendung der 70 (Als theologische Verdopplung)", mt: "", mk: "", lk: "10,1-24*", jh: "", scenario: "SC-11" });
+                data.push({ title: "Aussendung der 70 (Als theologische Verdopplung)", mt: "", mk: "", lk: "10,1-24*", jh: "", scenarios: ["SC-11"] });
             }
 
-            data.push({ title: "Barmherziger Samariter & Maria und Martha", mt: "", mk: "", lk: "10,25-42", jh: "", scenario: null });
-            data.push({ title: "Vom Beten", mt: "", mk: "", lk: "11,1-13", jh: "", scenario: null });
-            data.push({ title: "Weherufe gegen Pharisäer", mt: "", mk: "", lk: "11,37-12,59", jh: "", scenario: null });
-            data.push({ title: "Aufruf zur Buße & Heilungen am Sabbat", mt: "", mk: "", lk: "13,1-17.14,1-24", jh: "", scenario: null });
-            data.push({ title: "Tempelweihfest in Jerusalem", mt: "", mk: "", lk: "", jh: "10,22-42", scenario: null });
-            data.push({ title: "Klage über Jerusalem & Gleichnisse (Lukas-Sondergut)", mt: "", mk: "", lk: "13,22-35.14,25-16,31", jh: "", scenario: null });
-            data.push({ title: "Auferweckung des Lazarus", mt: "", mk: "", lk: "", jh: "11,1-57", scenario: null });
-            data.push({ title: "Vom Kommen des Reiches & Gleichnisse", mt: "", mk: "", lk: "17,11-18,14", jh: "", scenario: null });
-            data.push({ title: "Ehescheidung & Kindersegnung", mt: "19,3-15", mk: "10,2-16", lk: "18,15-17", jh: "", scenario: null });
-            data.push({ title: "Der reiche Jüngling & Arbeiter im Weinberg", mt: "19,16-20,16", mk: "10,17-31", lk: "18,18-30", jh: "", scenario: null });
-            data.push({ title: "Dritte Leidensankündigung", mt: "20,17-28", mk: "10,32-45", lk: "18,31-34", jh: "", scenario: null });
+            data.push({ title: "Barmherziger Samariter & Maria und Martha", mt: "", mk: "", lk: "10,25-42", jh: "", scenarios: [] });
+            data.push({ title: "Vom Beten", mt: "", mk: "", lk: "11,1-13", jh: "", scenarios: [] });
+            data.push({ title: "Weherufe gegen Pharisäer", mt: "", mk: "", lk: "11,37-12,59", jh: "", scenarios: [] });
+            data.push({ title: "Aufruf zur Buße & Heilungen am Sabbat", mt: "", mk: "", lk: "13,1-17; 14,1-24", jh: "", scenarios: [] });
+            data.push({ title: "Tempelweihfest in Jerusalem", mt: "", mk: "", lk: "", jh: "10,22-42", scenarios: [] });
+            data.push({ title: "Klage über Jerusalem & Gleichnisse (Lukas-Sondergut)", mt: "", mk: "", lk: "13,22-35; 14,25-16,31", jh: "", scenarios: [] });
+            data.push({ title: "Auferweckung des Lazarus", mt: "", mk: "", lk: "", jh: "11,1-57", scenarios: [] });
+            data.push({ title: "Vom Kommen des Reiches & Gleichnisse", mt: "", mk: "", lk: "17,11-18,14", jh: "", scenarios: [] });
+            data.push({ title: "Ehescheidung & Kindersegnung", mt: "19,3-15", mk: "10,2-16", lk: "18,15-17", jh: "", scenarios: [] });
+            data.push({ title: "Der reiche Jüngling & Arbeiter im Weinberg", mt: "19,16-20,16", mk: "10,17-31", lk: "18,18-30", jh: "", scenarios: [] });
+            data.push({ title: "Dritte Leidensankündigung", mt: "20,17-28", mk: "10,32-45", lk: "18,31-34", jh: "", scenarios: [] });
 
             // Jericho (SC-12)
             if (configState["SC-12"] === "A") {
-                data.push({ title: "Heilung der Blinden bei Jericho", mt: "20,29-34", mk: "10,46-52", lk: "18,35-43", jh: "", scenario: "SC-12" });
+                data.push({ title: "Heilung der Blinden bei Jericho", mt: "20,29-34", mk: "10,46-52", lk: "18,35-43", jh: "", scenarios: ["SC-12"] });
             } else {
-                data.push({ title: "Heilung beim Hineingehen nach Jericho", mt: "", mk: "", lk: "18,35-43", jh: "", scenario: "SC-12" });
-                data.push({ title: "Heilung beim Hinausgehen aus Jericho", mt: "20,29-34", mk: "10,46-52", lk: "", jh: "", scenario: "SC-12" });
+                data.push({ title: "Heilung beim Hineingehen nach Jericho", mt: "", mk: "", lk: "18,35-43", jh: "", scenarios: ["SC-12"] });
+                data.push({ title: "Heilung beim Hinausgehen aus Jericho", mt: "20,29-34", mk: "10,46-52", lk: "", jh: "", scenarios: ["SC-12"] });
             }
 
-            data.push({ title: "Zachäus & Anvertraute Pfunde", mt: "", mk: "", lk: "19,1-27", jh: "", scenario: null });
+            data.push({ title: "Zachäus & Anvertraute Pfunde", mt: "", mk: "", lk: "19,1-27", jh: "", scenarios: [] });
 
             data.push({
                 title: configState["SC-08"] === "A" ? "Vorbereitungs-Salbung in Bethanien" : "Salbung Jesu (Zusammengeführt)",
                 mt: "26,6-13", mk: "14,3-9",
                 lk: configState["SC-08"] === "B" ? "7,36-50*" : "",
                 jh: "12,1-11",
-                scenario: configState["SC-08"] === "B" ? "SC-08" : null
+                scenarios: ["SC-08"]
             });
 
-            data.push({ title: "Einzug in Jerusalem", mt: "21,1-11", mk: "11,1-11", lk: "19,28-44", jh: "12,12-19", scenario: null });
-            data.push({ title: "Verfluchung des Feigenbaums", mt: "21,18-22", mk: "11,12-14.20-26", lk: "", jh: "", scenario: null });
+            data.push({ title: "Einzug in Jerusalem", mt: "21,1-11", mk: "11,1-11", lk: "19,28-44", jh: "12,12-19", scenarios: [] });
+            data.push({ title: "Verfluchung des Feigenbaums", mt: "21,18-22", mk: "11,12-14; 11,20-26", lk: "", jh: "", scenarios: [] });
 
             data.push({
                 title: configState["SC-03"] === "A" ? "Zweite Tempelreinigung (Eskalation)" : "Tempelreinigung (Zusammengeführt)",
                 mt: "21,12-17", mk: "11,15-19", lk: "19,45-48",
                 jh: configState["SC-03"] === "B" ? "2,13-25*" : "",
-                scenario: configState["SC-03"] === "B" ? "SC-03" : null
+                scenarios: ["SC-03"]
             });
 
-            data.push({ title: "Gefolge von Griechen & Jesu Ankündigung", mt: "", mk: "", lk: "", jh: "12,20-50", scenario: null });
-            data.push({ title: "Vollmachtsfrage & Weingärtner", mt: "21,23-46", mk: "11,27-12,12", lk: "20,1-19", jh: "", scenario: null });
-            data.push({ title: "Steuerfrage & Auferstehung", mt: "22,1-46", mk: "12,13-37", lk: "20,20-44", jh: "", scenario: null });
-            data.push({ title: "Weherufe gegen die Pharisäer", mt: "23,1-39", mk: "12,38-44", lk: "20,45-21,4", jh: "", scenario: null });
-            data.push({ title: "Die Ölbergrede (Endzeit)", mt: "24,1-25,46", mk: "13,1-37", lk: "21,5-38", jh: "", scenario: null });
-            data.push({ title: "Verrat des Judas", mt: "26,1-5.14-16", mk: "14,1-2.10-11", lk: "22,1-6", jh: "", scenario: null });
+            data.push({ title: "Gefolge von Griechen & Jesu Ankündigung", mt: "", mk: "", lk: "", jh: "12,20-50", scenarios: [] });
+            data.push({ title: "Vollmachtsfrage & Weingärtner", mt: "21,23-46", mk: "11,27-12,12", lk: "20,1-19", jh: "", scenarios: [] });
+            data.push({ title: "Steuerfrage & Auferstehung", mt: "22,1-46", mk: "12,13-37", lk: "20,20-44", jh: "", scenarios: [] });
+            data.push({ title: "Weherufe gegen die Pharisäer", mt: "23,1-39", mk: "12,38-44", lk: "20,45-21,4", jh: "", scenarios: [] });
+            data.push({ title: "Die Ölbergrede (Endzeit)", mt: "24,1-25,46", mk: "13,1-37", lk: "21,5-38", jh: "", scenarios: [] });
+            data.push({ title: "Verrat des Judas", mt: "26,1-5; 26,14-16", mk: "14,1-2; 14,10-11", lk: "22,1-6", jh: "", scenarios: [] });
 
             // Abendmahl (SC-13)
             if (configState["SC-13"] === "B") {
-                data.push({ title: "Mahl vor dem Passah & Fußwaschung", mt: "", mk: "", lk: "", jh: "13,1-38", scenario: "SC-13" });
-                data.push({ title: "Das Passahmahl (Abendmahl)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "", scenario: "SC-13" });
+                data.push({ title: "Mahl vor dem Passah & Fußwaschung", mt: "", mk: "", lk: "", jh: "13,1-38", scenarios: ["SC-13"] });
+                data.push({ title: "Das Passahmahl (Abendmahl)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "", scenarios: ["SC-13"] });
             } else {
-                data.push({ title: "Das Letzte Abendmahl (Harmonisiert als Passah)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "13,1-38", scenario: "SC-13" });
+                data.push({ title: "Das Letzte Abendmahl (Harmonisiert als Passah)", mt: "26,17-29", mk: "14,12-25", lk: "22,7-38", jh: "13,1-38", scenarios: ["SC-13"] });
             }
 
-            data.push({ title: "Abschiedsreden & Hohepriesterliches Gebet", mt: "", mk: "", lk: "", jh: "14,1-17,26", scenario: null });
-            data.push({ title: "Gethsemane", mt: "26,30-46", mk: "14,26-42", lk: "22,39-42.45-46", jh: "18,1-2", scenario: null });
+            data.push({ title: "Abschiedsreden & Hohepriesterliches Gebet", mt: "", mk: "", lk: "", jh: "14,1-17,26", scenarios: [] });
             
-            // Engel und Blutschweiß (SC-14)
-            data.push({ title: "Stärkender Engel und Blutschweiß", mt: "", mk: "", lk: tc("22,43-44", "SC-14"), jh: "", scenario: "SC-14" });
+            // Gethsemane (SC-14 Textkritik als Insert)
+            data.push({ title: "Gethsemane", mt: "26,30-46", mk: "14,26-42", lk: tcBlock("22,39-46", "22,39-42", "22,43-44", "22,45-46", "SC-14"), jh: "18,1-2", scenarios: ["SC-14"] });
             
-            data.push({ title: "Gefangennahme & Flucht", mt: "26,47-56", mk: "14,43-52", lk: "22,47-53", jh: "18,3-11", scenario: null });
-            data.push({ title: "Vor dem Hohen Rat & Verleugnung", mt: "26,57-75", mk: "14,53-72", lk: "22,54-71", jh: "18,12-27", scenario: null });
+            data.push({ title: "Gefangennahme & Flucht", mt: "26,47-56", mk: "14,43-52", lk: "22,47-53", jh: "18,3-11", scenarios: [] });
+            data.push({ title: "Vor dem Hohen Rat & Verleugnung", mt: "26,57-75", mk: "14,53-72", lk: "22,54-71", jh: "18,12-27", scenarios: [] });
 
             // Kreuzigung Uhrzeit (SC-15)
             if (configState["SC-15"] === "B") {
-                data.push({ title: "Judas' Ende & Verhör durch Pilatus (Urteil 6. Stunde Joh)", mt: "27,1-30", mk: "15,1-19", lk: "23,1-25", jh: "18,28-19,16", scenario: "SC-15" });
-                data.push({ title: "Kreuzigung (Ab der 3. Stunde bei Markus)", mt: "27,31-56", mk: "15,20-41", lk: "23,26-49", jh: "19,17-37", scenario: "SC-15" });
+                data.push({ title: "Judas' Ende & Verhör durch Pilatus (Urteil 6. Stunde Joh)", mt: "27,1-30", mk: "15,1-19", lk: "23,1-25", jh: "18,28-19,16", scenarios: ["SC-15"] });
+                data.push({ title: "Kreuzigung (Ab der 3. Stunde bei Markus)", mt: "27,31-56", mk: "15,20-41", lk: "23,26-49", jh: "19,17-37", scenarios: ["SC-15"] });
             } else {
-                data.push({ title: "Ende des Judas, Vor Pilatus & Kreuzigung", mt: "27,1-56", mk: "15,1-41", lk: "23,1-49", jh: "18,28-19,37", scenario: "SC-15" });
+                data.push({ title: "Ende des Judas, Vor Pilatus & Kreuzigung", mt: "27,1-56", mk: "15,1-41", lk: "23,1-49", jh: "18,28-19,37", scenarios: ["SC-15"] });
             }
 
-            data.push({ title: "Grablegung & Grabeswache", mt: "27,57-66", mk: "15,42-47", lk: "23,50-56", jh: "19,38-42", scenario: null });
-            data.push({ title: "Die Auferstehung & Die leere Gruft", mt: "28,1-8", mk: "16,1-8", lk: "24,1-12", jh: "20,1-10", scenario: null });
+            data.push({ title: "Grablegung & Grabeswache", mt: "27,57-66", mk: "15,42-47", lk: "23,50-56", jh: "19,38-42", scenarios: [] });
+            data.push({ title: "Die Auferstehung & Die leere Gruft", mt: "28,1-8", mk: "16,1-8", lk: "24,1-12", jh: "20,1-10", scenarios: [] });
             
-            // SC-16: Der Auferstandene (Orte & Markusschluss)
+            // SC-16 (Orte) & SC-17 (Markusschluss Textkritik)
             let sc16 = configState["SC-16"];
-            let mkEnd = tc("16,9-20", "SC-16", ["A", "C"]);
+            let mkEnd = tc("16,9-20", "SC-17");
             
-            if (sc16 === "A" || sc16 === "B") { // Historische Route (Getrennt)
-                data.push({ title: "Erscheinungen in Jerusalem (Früh/Spät)", mt: "", mk: "", lk: "24,13-49", jh: "20,11-29", scenario: "SC-16" });
-                data.push({ title: "Erscheinungen in Galiläa", mt: "28,9-20", mk: mkEnd, lk: "", jh: "21,1-25", scenario: "SC-16" });
+            if (sc16 === "A") { // Historische Route (Getrennt)
+                data.push({ title: "Erscheinungen in Jerusalem (Früh/Spät)", mt: "", mk: "", lk: "24,13-49", jh: "20,11-29", scenarios: ["SC-16"] });
+                data.push({ title: "Erscheinungen in Galiläa & Markusschluss", mt: "28,9-20", mk: mkEnd, lk: "", jh: "21,1-25", scenarios: ["SC-16", "SC-17"] });
             } else { // Unabhängige Traditionen (Vereint)
-                data.push({ title: "Erscheinungen (Ortsangaben vereint)", mt: "28,9-20", mk: mkEnd, lk: "24,13-49*", jh: "20,11-21,25*", scenario: "SC-16" });
+                data.push({ title: "Erscheinungen (Ortsangaben vereint) & Markusschluss", mt: "28,9-20", mk: mkEnd, lk: "24,13-49*", jh: "20,11-21,25*", scenarios: ["SC-16", "SC-17"] });
             }
 
-            data.push({ title: "Himmelfahrt Jesu", mt: "", mk: "", lk: "24,50-53", jh: "", scenario: null });
+            data.push({ title: "Himmelfahrt Jesu", mt: "", mk: "", lk: "24,50-53", jh: "", scenarios: [] });
 
             // Die IDs werden chronologisch vor dem Filter zugewiesen, um stabile Nummern zu haben.
             data.forEach((row, idx) => { row.id = idx + 1; });
             return data;
+        }
+
+        function resetAllToA() {
+            Object.keys(configState).forEach(key => {
+                configState[key] = "A";
+            });
+            renderLab();
+            updateTableAndDashboard();
+            
+            // Kleiner visueller Hinweis für den Nutzer
+            document.getElementById('searchInput').value = '';
+            scrollToSection('szenarien');
         }
 
         function initializeApp() {
@@ -565,7 +604,6 @@
             updateTableAndDashboard();
         }
 
-        // Neue Helper-Funktion: Rendert nur EINE spezifische Szenariokarte
         function buildScenarioHTML(key) {
             const data = dynamicScenarios[key];
             let html = `
@@ -584,10 +622,10 @@
                 let activeClass = ''; let borderClass = '';
                 
                 if (configState[key] === optKey) {
-                    if (optKey === 'A') {
+                    if (optKey === 'A') { 
                         activeClass = 'bg-stone-900/90 border-emerald-500 shadow-md';
                         borderClass = 'border-emerald-500 text-emerald-500';
-                    } else {
+                    } else { 
                         activeClass = 'bg-stone-900/90 border-amber-500 shadow-md';
                         borderClass = 'border-amber-500 text-amber-500';
                     }
@@ -596,7 +634,7 @@
                     borderClass = 'border-stone-500 text-stone-500';
                 }
 
-                const titleColor = optKey === 'A' ? 'text-emerald-400' : 'text-amber-400';
+                const titleColor = (optKey === 'A') ? 'text-emerald-400' : 'text-amber-400';
 
                 html += `
                     <label class="flex items-start gap-4 cursor-pointer p-4 rounded-lg border-2 transition-all duration-300 ${activeClass}">
@@ -627,7 +665,6 @@
         function updateConfig(scenarioKey, selectedOption) {
             configState[scenarioKey] = selectedOption;
             
-            // Performance-Optimierung: Nur das geänderte Szenario im DOM aktualisieren
             const oldCard = document.getElementById(`main-desc-${scenarioKey}`);
             if (oldCard) {
                 oldCard.outerHTML = buildScenarioHTML(scenarioKey);
@@ -641,7 +678,7 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filteredData = rawData.filter(item => 
                 item.title.toLowerCase().includes(searchTerm) || 
-                (item.scenario && item.scenario.toLowerCase().includes(searchTerm))
+                (item.scenarios && item.scenarios.some(sc => sc.toLowerCase().includes(searchTerm)))
             );
 
             const tbody = document.getElementById('harmonieBody');
@@ -655,17 +692,20 @@
                 filteredData.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.id = `row-${item.id}`;
-                    tr.setAttribute('data-scenario', item.scenario || '');
+                    tr.setAttribute('data-scenario', item.scenarios ? item.scenarios.join(',') : '');
                     
-                    const isMergedTarget = Object.values(item).some(val => typeof val === 'string' && val.includes('*'));
+                    // Ein Element ist das Ziel einer Verschiebung/Änderung, wenn es einen * enthält oder durchgestrichen ist (line-through)
+                    const isMergedTarget = Object.values(item).some(val => typeof val === 'string' && (val.includes('*') || val.includes('line-through')));
                     tr.className = `scroll-mt-24 border-l-4 transition duration-300 ${isMergedTarget ? 'bg-emerald-50/60 hover:bg-emerald-100 border-l-emerald-500' : 'hover:bg-stone-50 border-l-transparent'}`;
                     
                     let scenarioBadge = '';
-                    if (item.scenario) {
-                        let selectedOption = configState[item.scenario];
-                        scenarioBadge = `<button onclick="scrollToScenario('${item.scenario}')" class="inline-flex items-center px-2 py-1 rounded text-xs font-bold border bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 hover:shadow transition" title="Zur Theorie im Labor springen">
-                            ${item.scenario} (${selectedOption}) &#8595;
-                        </button>`;
+                    if (item.scenarios && item.scenarios.length > 0) {
+                        scenarioBadge = item.scenarios.map(sc => {
+                            let selectedOption = configState[sc];
+                            return `<button onclick="scrollToScenario('${sc}')" class="inline-flex items-center px-2 py-1 rounded text-xs font-bold border bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200 hover:shadow transition mr-1 mb-1" title="Zur Theorie im Labor springen">
+                                ${sc} (${selectedOption}) &#8595;
+                            </button>`;
+                        }).join('');
                     }
 
                     const formatText = (text) => text.replace(/\*/g, '<span class="text-emerald-600 font-bold text-lg leading-none" title="Text verschoben aufgrund der gewählten Theorie im Labor">*</span>');
@@ -684,7 +724,7 @@
             }
 
             let mtCount = 0, mkCount = 0, lkCount = 0, jhCount = 0;
-            // Zähle nur Elemente, die auch Zahlen enthalten (Streichungen werden nicht ignoriert, leere Strings aber schon)
+            // Zähle Elemente mit Zahlen (umgeht leere Felder, erfasst aber gestrichene Werte)
             rawData.forEach(e => {
                 if(e.mt && e.mt.match(/\d/)) mtCount++; 
                 if(e.mk && e.mk.match(/\d/)) mkCount++; 
@@ -744,7 +784,7 @@
             document.getElementById('searchInput').value = '';
             updateTableAndDashboard();
             setTimeout(() => {
-                const rows = document.querySelectorAll(`tr[data-scenario="${scenarioId}"]`);
+                const rows = Array.from(document.querySelectorAll('tr[data-scenario]')).filter(r => r.getAttribute('data-scenario').includes(scenarioId));
                 if (rows.length > 0) {
                     rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                     rows.forEach(r => {
