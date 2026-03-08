@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktive Evangelienharmonisierung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Neutrals, Deep Stone & Subtle Emerald for 'Conservative/Traditional' path -->
+    
+    <!-- Application Structure Plan: 
+    1. Header/Disclaimer: Explicitly frames the tool as a chronological reader emphasizing historical reliability, not biblical criticism.
+    2. Dashboard: Dynamic metrics updating on text merging/splitting.
+    3. Harmonization Table: 12 fully dynamic scenarios that shift texts chronologically based on selected theories.
+    4. Scenarios Lab: Theory A (Traditional/Conservative) is visually highlighted as the recommended chronological path. Theory B (Critical/Literary) remains available for academic contrast.
+    -->
+
+    <!-- Visualization & Content Choices: 
+    1. Goal: Show data coverage -> Viz: Doughnut Chart (Chart.js).
+    2. Goal: Present sequence -> Viz: Table with dynamic merging/splitting logic (asterisks for shifted texts).
+    3. Goal: Model 12 Uncertainties -> Viz: Interactive Cards with Radio choices emphasizing Theory A. NO SVG graphics used. 
+    -->
+
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        html { scroll-behavior: smooth; }
+        
+        @keyframes pulse-border {
+            0% { border-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+            100% { border-color: #44403c; box-shadow: none; }
+        }
+        @keyframes highlight-row {
+            0% { background-color: #fde68a !important; }
+            100% { background-color: transparent; }
+        }
+
+        .scenario-highlight-main { animation: pulse-border 2.5s ease-out; }
+        .row-highlight { animation: highlight-row 2.5s ease-out; }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans leading-relaxed">
+
+    <nav class="bg-stone-900 text-stone-50 sticky top-0 z-50 shadow-md border-b-2 border-amber-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl tracking-wider">&#10014; Synopse & Harmonie</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <button onclick="scrollToSection('dashboard')" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Übersicht</button>
+                        <button onclick="scrollToSection('harmonie')" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Chronologie-Tabelle</button>
+                        <button onclick="scrollToSection('szenarien')" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Labor & Theorien</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12 md:space-y-16">
+
+        <header class="text-center max-w-4xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-stone-900 sm:text-5xl border-b-4 border-amber-600 pb-4 inline-block">Die Vier Evangelien</h1>
+            
+            <div class="mt-8 bg-amber-50 border border-amber-200 rounded-lg p-6 text-left shadow-sm">
+                <h2 class="text-xl font-bold text-amber-900 mb-2">&#128214; Leseanleitung & Zielsetzung</h2>
+                <p class="text-stone-700 mb-3">
+                    Das primäre Ziel dieser interaktiven Harmonie ist <strong>nicht die Bibelkritik</strong>, sondern die Ermöglichung einer fließenden, <strong>chronologischen Lesung</strong> der Ereignisse im Leben Jesu Christi. Die Evangelisten haben ihre Berichte aus verschiedenen Perspektiven geschrieben, die sich gegenseitig wunderbar ergänzen.
+                </p>
+                <p class="text-stone-700">
+                    Bei scheinbaren Widersprüchen in Ort oder Zeit (den sogenannten <em>Szenarien</em>) ist in unserem "Labor" standardmäßig die <strong>konservative, traditionell-harmonisierende Sichtweise (Theorie A)</strong> voreingestellt. Diese Sichtweise vertraut auf die historische Zuverlässigkeit der Berichte und löst die Diskrepanzen durch logische geografische, kulturelle oder historische Erklärungen. Wer alternative, historisch-kritische Theorien prüfen möchte, kann diese ebenfalls im Labor auswählen.
+                </p>
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-stone-800">Analytische Übersicht</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="chart-container">
+                    <canvas id="gospelChart"></canvas>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-stone-50 p-4 rounded-lg border border-stone-100 shadow-inner">
+                        <h3 class="font-bold text-lg text-stone-800 mb-3">&#128202; Text-Abdeckung</h3>
+                        <ul class="space-y-2 text-stone-600" id="statsList">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+                    <div class="bg-stone-800 p-4 rounded-lg text-stone-200 shadow-md">
+                        <h3 class="font-bold text-lg text-amber-500">&#9888; Prinzip des Texterhalts</h3>
+                        <p class="mt-1 text-sm">Wenn Sie unten Theorien zusammenführen oder trennen, wird <strong>kein Bibeltext gelöscht</strong>! Die Stellenangaben werden lediglich auf der Zeitachse an die Position der anderen Evangelisten verschoben. Die Menge der inspirierten Texte bleibt immer erhalten.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HARMONIZATION TABLE -->
+        <section id="harmonie" class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8">
+            <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800">Dynamische Chronologie-Tabelle</h2>
+                    <p class="text-stone-600 mt-2">Verschobene Bibelstellen sind mit einem <strong class="text-amber-600 font-bold text-lg">*</strong> markiert. Klicken Sie auf ein <span class="bg-amber-200 text-amber-900 px-1 rounded text-xs font-bold border border-amber-300">SC-XX</span> Badge, um die zugrundeliegende Theorie im Labor zu lesen.</p>
+                </div>
+            </div>
+
+            <div class="mb-4 flex flex-col sm:flex-row gap-4 justify-between items-end">
+                <div class="relative w-full sm:w-1/3">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">&#128269;</span>
+                    <input type="text" id="searchInput" placeholder="Ereignis suchen..." class="pl-10 pr-4 py-2 border border-stone-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 w-full shadow-sm">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto border border-stone-200 rounded-lg shadow-inner">
+                <table class="min-w-full divide-y divide-stone-200 text-sm text-left">
+                    <thead class="bg-stone-800 text-stone-50 font-semibold sticky top-0 z-10">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 w-12">Nr.</th>
+                            <th scope="col" class="px-4 py-3 w-1/4">Ereignis / Perikope</th>
+                            <th scope="col" class="px-4 py-3">Matthäus</th>
+                            <th scope="col" class="px-4 py-3">Markus</th>
+                            <th scope="col" class="px-4 py-3">Lukas</th>
+                            <th scope="col" class="px-4 py-3">Johannes</th>
+                            <th scope="col" class="px-4 py-3">Szenario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="harmonieBody" class="bg-white divide-y divide-stone-100">
+                    </tbody>
+                </table>
+            </div>
+            <div id="noResults" class="hidden text-center py-8 text-stone-500 bg-stone-50 rounded-b-lg border border-t-0 border-stone-200">
+                Keine Ereignisse entsprechen der aktuellen Suche.
+            </div>
+        </section>
+
+        <!-- UNIFIED LAB & SCENARIO DIRECTORY -->
+        <section id="szenarien" class="bg-stone-900 text-stone-50 rounded-xl shadow-xl p-6 md:p-8 mb-16 border-t-4 border-amber-600">
+            <div class="mb-8 border-b border-stone-700 pb-4">
+                <h2 class="text-2xl font-bold text-amber-500 flex items-center gap-2">
+                    <span>&#9881;</span> Historiographisches Labor (12 Szenarien)
+                </h2>
+                <p class="text-stone-300 mt-2 text-sm md:text-base">Hier definieren Sie die Architektur der Tabelle. <strong>Theorie A</strong> vertritt stets die verlässliche, historisch-harmonisierende Erklärung.</p>
+            </div>
+            
+            <div id="scenariosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-800 border-t border-stone-700 py-8 text-center text-stone-400 text-sm">
+        <p>&copy; 2024 Interaktive Theologische Studien | Werkzeug für die chronologische Bibellese.</p>
+    </footer>
+
+    <script>
+        // ---------------------------------------------------------
+        // 1. STATE MANAGEMENT
+        // ---------------------------------------------------------
+        // A = Traditionelle Harmonie (Historisch Zuverlässig) | B = Historisch-Kritische Sicht
+        let configState = {
+            "SC-01": "A", // Stammbäume
+            "SC-02": "A", // Berufung
+            "SC-03": "A", // Tempelreinigung
+            "SC-04": "A", // Nazareth
+            "SC-05": "A", // Bergpredigt
+            "SC-06": "A", // Salbung
+            "SC-07": "A", // Abendmahl
+            "SC-08": "A", // Erscheinungen
+            "SC-09": "A", // Jericho Blinde
+            "SC-10": "A", // Aussendung (12 vs 70)
+            "SC-11": "A", // Kreuzigung Uhrzeit
+            "SC-12": "A"  // Gerasa Besessene
+        };
+
+        const dynamicScenarios = {
+            "SC-01": {
+                title: "Die Stammbäume Jesu",
+                desc: "Lukas (Lk 3) und Matthäus (Mt 1) bieten unterschiedliche Stammbäume mit verschiedenen Namen ab David an.",
+                options: {
+                    "A": { label: "Traditionell: Biologisch vs. Rechtlich", text: "Beide Stammbäume sind historisch korrekt. Nach dem jüdischen Leviratsgesetz (Schwagerehe) gab es eine biologische (Natan/Lukas) und eine königlich-rechtliche Linie (Salomo/Matthäus) für Josef. Alternativ verzeichnet Lukas den Stammbaum Marias. (Die Texte bleiben getrennt)." },
+                    "B": { label: "Kritisch: Theologische Konstruktion", text: "Die Stammbäume sind theologische Konstruktionen ohne historischen Anspruch. Wir führen sie in einer Zeile am Anfang zusammen." }
+                }
+            },
+            "SC-02": {
+                title: "Die erste Jüngerberufung",
+                desc: "Joh 1 platziert ein Treffen im Jordantal. Die Synoptiker platzieren die Berufung später am See Gennesaret.",
+                options: {
+                    "A": { label: "Traditionell: Zwei Phasen", text: "Es gab ein erstes Kennenlernen am Jordan, nach dem die Jünger wieder fischen gingen. Später folgte die endgültige Berufung am See in den Vollzeitdienst. (Texte chronologisch getrennt belassen)." },
+                    "B": { label: "Kritisch: Verschiebung", text: "Es gab nur ein Ereignis. Johannes zog es redaktionell nach vorne. (Texte zusammenführen)." }
+                }
+            },
+            "SC-03": {
+                title: "Die Tempelreinigung",
+                desc: "Johannes (Joh 2) datiert sie früh. Die Synoptiker datieren sie in die letzte Passionswoche (spät).",
+                options: {
+                    "A": { label: "Traditionell: Zwei Ereignisse", text: "Jesus hat den Tempel tatsächlich zweimal gereinigt – einmal programmatisch zu Beginn und ein eskalierendes Mal am Ende seines Wirkens. (Texte getrennt belassen)." },
+                    "B": { label: "Kritisch: Theologische Vorverlegung", text: "Johannes hat das Ereignis redaktionell an den Anfang gezogen. (Alle Texte in die Passionswoche verschieben)." }
+                }
+            },
+            "SC-04": {
+                title: "Verwerfung in Nazareth",
+                desc: "Lukas (Lk 4) verortet den Besuch am Anfang. Matthäus/Markus platzieren ihn später im Ministerium.",
+                options: {
+                    "A": { label: "Traditionell: Zwei Besuche", text: "Jesus besuchte seine ungläubige Heimatstadt zweimal und wurde beide Male von seinen Mitbürgern abgelehnt. (Texte getrennt belassen)." },
+                    "B": { label: "Kritisch: Lukanisches Programm", text: "Es gab nur einen Besuch. Lukas verschob ihn als theologische 'Programmschrift' an den Anfang. (Texte zusammenführen)." }
+                }
+            },
+            "SC-05": {
+                title: "Die große Lehrrede (Berg vs. Ebene)",
+                desc: "Matthäus bündelt die Lehre auf dem Berg (Mt 5-7). Lukas (Lk 6) bringt eine ähnliche Rede auf der Ebene.",
+                options: {
+                    "A": { label: "Traditionell: Plateau-Theorie", text: "Es ist dasselbe Ereignis. Jesus stand auf einem Plateau ('ebener Platz') am Berghang. Lukas beschreibt den genauen Ort, Matthäus das Gebirge. (Texte zusammengeführt)." },
+                    "B": { label: "Kritisch: Quelle Q", text: "Die Reden wurden aus Spruchsammlungen künstlich zusammengefügt (Redaktionsgeschichte). (Texte ebenfalls zusammengeführt)." }
+                }
+            },
+            "SC-06": {
+                title: "Die Salbung(en) Jesu",
+                desc: "Lukas (Lk 7) schildert eine Salbung durch eine Sünderin in Galiläa. Die anderen eine Salbung in Bethanien vor dem Tod.",
+                options: {
+                    "A": { label: "Traditionell: Zwei Personen", text: "Die Salbung der namenlosen Sünderin aus Dankbarkeit in Galiläa hat nichts mit der späteren Vorbereitungssalbung durch Maria in Bethanien zu tun. (Texte chronologisch getrennt)." },
+                    "B": { label: "Kritisch: Literarische Adaption", text: "Lukas formte das Bethanien-Ereignis theologisch um und verschob es nach vorne. (Alle Texte in die Passionswoche verschieben)." }
+                }
+            },
+            "SC-07": {
+                title: "Das Datum des Letzten Abendmahls",
+                desc: "Synoptiker: Abendmahl war das Passahmahl. Johannes: Es war vor dem Passah, Jesus stirbt zur Schlachtzeit der Lämmer.",
+                options: {
+                    "A": { label: "Traditionell: Kalender-Harmonie", text: "Durch unterschiedliche Kalendersysteme (pharisäisch vs. essenisch/galiläisch) aß Jesus legal sein Passah, starb aber trotzdem zur Zeit der offiziellen Tempelschlachtungen. (Das Mahl wird in einer Zeile harmonisiert)." },
+                    "B": { label: "Kritisch: Johanneische Theologie", text: "Johannes veränderte den Todestag und das Mahl absichtlich, um Jesu Rolle als Passahlamm zu betonen. (Wir trennen Mahl und Passah in zwei Zeilen)." }
+                }
+            },
+            "SC-08": {
+                title: "Erscheinungsorte des Auferstandenen",
+                desc: "Lukas fokussiert sich exklusiv auf Jerusalem, Matthäus auf Galiläa, Johannes verbindet beides.",
+                options: {
+                    "A": { label: "Traditionell: Historische Route", text: "Die Jünger waren an Ostern in Jerusalem, wanderten dann nach Galiläa (Mt/Joh) und kehrten für die Himmelfahrt nach Jerusalem zurück (40 Tage). Wir ordnen die Texte getrennt nach dieser Route." },
+                    "B": { label: "Kritisch: Unabhängige Traditionen", text: "Die Evangelien nutzen sich ausschließende Gemeindetraditionen. (Wir fassen alles unspezifisch als 'Erscheinungen' zusammen)." }
+                }
+            },
+            "SC-09": {
+                title: "Die Heilung bei Jericho (Der/Die Blinden)",
+                desc: "Lukas: Heilung beim Hineingehen. Markus/Matthäus: Heilung beim Hinausgehen. (Zudem Mt = 2 Blinde, Mk/Lk = 1 Blinder).",
+                options: {
+                    "A": { label: "Traditionell: Alt- und Neu-Jericho", text: "Das Ereignis fand geografisch genau dazwischen statt: Jesus verließ das alte (jüdische) Jericho und betrat das neue (herodianische) Jericho. Es waren zwei Männer, Mk nennt den lautesten (Bartimäus). (Texte harmonisiert in einer Zeile)." },
+                    "B": { label: "Kritisch: Literarische Diskrepanz", text: "Unvereinbare Widersprüche in Ort und Zahl. (Wir spalten die Tabelle auf in 'Hineingehen' und 'Hinausgehen')." }
+                }
+            },
+            "SC-10": {
+                title: "Aussendung der Jünger (Die 12 vs 70)",
+                desc: "Matthäus (Mt 10) und Markus haben eine Aussendung der 12. Lukas hat zusätzlich noch eine Aussendung von 70 Jüngern (Lk 10).",
+                options: {
+                    "A": { label: "Traditionell: Zwei Missionen", text: "Jesus führte historisch zwei große Missionseinsätze durch, einmal klein (12), einmal groß (70) in Judäa. (Texte bleiben als zwei getrennte Ereignisse erhalten)." },
+                    "B": { label: "Kritisch: Theologische Verdopplung", text: "Es gab nur eine Aussendung. Lukas erfindet die 70, um die weltweite Heidenmission (70 Völker) vorwegzunehmen. (Wir führen Lk 9 und Lk 10 zusammen)." }
+                }
+            },
+            "SC-11": {
+                title: "Die Uhrzeit der Kreuzigung",
+                desc: "Markus 15: Kreuzigung in der 3. Stunde (9 Uhr). Joh 19: Das Urteil beim Pilatus fiel erst in der 6. Stunde (12 Uhr).",
+                options: {
+                    "A": { label: "Traditionell: Römische vs. Jüdische Uhr", text: "Johannes nutzt die römische Tageszählung (ab Mitternacht = 6 Uhr morgens bei Pilatus). Markus nutzt die jüdische Zählung. Alles lief am Vormittag chronologisch ab. (Urteil und Kreuzigung chronologisch als ein Ereignisstrang)." },
+                    "B": { label: "Kritisch: Unvereinbarer Bruch", text: "Johannes verschob die Uhrzeit, damit Jesus mittags stirbt (Schlachtung der Lämmer). (Wir spalten die Zeile in einen chronologischen Widerspruch)." }
+                }
+            },
+            "SC-12": {
+                title: "Die Besessenen von Gadara / Gerasa",
+                desc: "Matthäus: 2 Besessene bei Gadara. Markus/Lukas: 1 Besessener bei Gerasa (bzw. Gergesa).",
+                options: {
+                    "A": { label: "Traditionell: Geografische Präzision", text: "Gadara ist die übergeordnete Regionshauptstadt, Gergesa/Khersa der genaue Ort am See. Es waren zwei Männer, aber nur einer sprach mit Jesus. (Wir harmonisieren alle Texte als ein Ereignis)." },
+                    "B": { label: "Kritisch: Redaktionelle Erfindung", text: "Matthäus erfindet einen zweiten Mann aus rechtlichen Gründen (zwei Zeugen). (Wir spalten das Ereignis auf)." }
+                }
+            }
+        };
+
+        let myChart = null;
+
+        // ---------------------------------------------------------
+        // 2. DATA GENERATION ENGINE (Dynamic Text Shifting)
+        // ---------------------------------------------------------
+        function getTableData() {
+            let data = [];
+            
+            data.push({ title: "Prolog", mt: "", mk: "", lk: "1,1-4", jh: "1,1-18", scenario: null });
+            
+            // SC-01: Stammbäume
+            if (configState["SC-01"] === "B") { 
+                data.push({ title: "Die Stammbäume Jesu (Konstruiert/Zusammengeführt)", mt: "1,1-17", mk: "", lk: "3,23-38*", jh: "", scenario: "SC-01" });
+            } else { 
+                data.push({ title: "Stammbaum der königlichen Linie (Josef)", mt: "1,1-17", mk: "", lk: "", jh: "", scenario: "SC-01" });
+            }
+
+            data.push({ title: "Geburt Jesu & Hirten", mt: "2,1", mk: "", lk: "2,1-20", jh: "", scenario: null });
+            data.push({ title: "Anbetung der Magier & Flucht", mt: "2,1-23", mk: "", lk: "", jh: "", scenario: null });
+            data.push({ title: "Auftreten Johannes des Täufers & Taufe", mt: "3,1-17", mk: "1,1-11", lk: "3,1-22", jh: "1,19-34", scenario: null });
+            
+            // SC-01: Stammbaum Lukas (wenn Getrennt/Traditionell)
+            if (configState["SC-01"] === "A") {
+                data.push({ title: "Stammbaum der biologischen Linie (Maria/Natan)", mt: "", mk: "", lk: "3,23-38", jh: "", scenario: "SC-01" });
+            }
+
+            data.push({ title: "Versuchung Jesu", mt: "4,1-11", mk: "1,12-13", lk: "4,1-13", jh: "", scenario: null });
+
+            // SC-02: Erste Begegnung vs Berufung
+            if (configState["SC-02"] === "A") {
+                data.push({ title: "Erste Begegnung (Jordantal)", mt: "", mk: "", lk: "", jh: "1,35-51", scenario: "SC-02" });
+            }
+
+            data.push({ title: "Hochzeit zu Kana", mt: "", mk: "", lk: "", jh: "2,1-12", scenario: null });
+
+            // SC-03: Tempelreinigung (Früh)
+            if (configState["SC-03"] === "A") {
+                data.push({ title: "Erste Tempelreinigung (Frühdatierung)", mt: "", mk: "", lk: "", jh: "2,13-25", scenario: "SC-03" });
+            }
+
+            data.push({ title: "Gespräch mit Nikodemus & Samaritanerin", mt: "", mk: "", lk: "", jh: "3,1-4,42", scenario: null });
+
+            // SC-04: Nazareth (Früh)
+            if (configState["SC-04"] === "A") {
+                data.push({ title: "Erste Verwerfung in Nazareth", mt: "", mk: "", lk: "4,16-30", jh: "", scenario: "SC-04" });
+            }
+
+            // SC-02: Berufung Spät (See) 
+            data.push({
+                title: configState["SC-02"] === "A" ? "Berufung der Jünger zum Vollzeitdienst (am See)" : "Berufung der Jünger (Zusammengeführt)",
+                mt: "4,18-22", mk: "1,16-20", lk: "5,1-11",
+                jh: configState["SC-02"] === "B" ? "1,35-51*" : "",
+                scenario: configState["SC-02"] === "B" ? "SC-02" : null
+            });
+
+            // SC-05: Bergpredigt/Feldrede 
+            // Hier nutzen beide Optionen eine Zusammenführung in der Tabelle (gleiches Event oder gleiche Quelle), 
+            // der Unterschied liegt in der Theologie der Erklärung im Labor.
+            data.push({ title: "Die Große Lehrrede (Bergpredigt / Feldrede)", mt: "5,1-7,29", mk: "", lk: "6,17-49", jh: "", scenario: "SC-05" });
+
+            data.push({ title: "Heilung des Knechts & Jüngling v. Nain", mt: "8,5-13", mk: "", lk: "7,1-17", jh: "4,46-54", scenario: null });
+
+            // SC-06: Salbung Früh (Galiläa)
+            if (configState["SC-06"] === "A") {
+                data.push({ title: "Salbung durch die Sünderin aus Dankbarkeit (Galiläa)", mt: "", mk: "", lk: "7,36-50", jh: "", scenario: "SC-06" });
+            }
+
+            // SC-12: Gerasa/Gadara
+            data.push({ title: "Sturmstillung", mt: "8,23-27", mk: "4,35-41", lk: "8,22-25", jh: "", scenario: null });
+            if (configState["SC-12"] === "A") {
+                data.push({ title: "Heilung der Besessenen in der Region Gadara (Khersa)", mt: "8,28-34", mk: "5,1-20", lk: "8,26-39", jh: "", scenario: "SC-12" });
+            } else {
+                data.push({ title: "Heilung zweier Besessener bei Gadara", mt: "8,28-34", mk: "", lk: "", jh: "", scenario: "SC-12" });
+                data.push({ title: "Heilung eines Besessenen bei Gerasa", mt: "", mk: "5,1-20", lk: "8,26-39", jh: "", scenario: "SC-12" });
+            }
+
+            // SC-10: Aussendung (Die 12)
+            data.push({ title: "Aussendung der Zwölf", mt: "10,1-42", mk: "6,7-13", lk: "9,1-6", jh: "", scenario: configState["SC-10"] === "A" ? null : "SC-10" });
+
+            // SC-04: Nazareth (Spät) 
+            data.push({
+                title: configState["SC-04"] === "A" ? "Zweite Verwerfung in Nazareth" : "Verwerfung in Nazareth (Verschoben)",
+                mt: "13,53-58", mk: "6,1-6",
+                lk: configState["SC-04"] === "B" ? "4,16-30*" : "",
+                jh: "",
+                scenario: configState["SC-04"] === "B" ? "SC-04" : null
+            });
+
+            data.push({ title: "Speisung der 5000 & Wandel auf See", mt: "14,13-33", mk: "6,30-52", lk: "9,10-17", jh: "6,1-21", scenario: null });
+            data.push({ title: "Petrusbekenntnis & Verklärung", mt: "16,13-20; 17,1-13", mk: "8,27-30; 9,2-13", lk: "9,18-36", jh: "6,66-71", scenario: null });
+
+            // SC-10: Aussendung (Die 70)
+            if (configState["SC-10"] === "A") {
+                data.push({ title: "Spätere Aussendung der Siebzig (Judäa)", mt: "", mk: "", lk: "10,1-12", jh: "", scenario: "SC-10" });
+            } else {
+                // If B, Lk 10 is considered a doublet and moved to the first sending out, but functionally it's easier to keep text visibility.
+                data.push({ title: "Aussendung der 70 (Als Lukanische Verdopplung gewertet)", mt: "", mk: "", lk: "10,1-12*", jh: "", scenario: "SC-10" });
+            }
+
+            // SC-09: Jericho
+            if (configState["SC-09"] === "A") {
+                data.push({ title: "Heilung der Blinden (Zwischen Alt- und Neu-Jericho)", mt: "20,29-34", mk: "10,46-52", lk: "18,35-43", jh: "", scenario: "SC-09" });
+            } else {
+                data.push({ title: "Heilung beim Hineingehen nach Jericho", mt: "", mk: "", lk: "18,35-43", jh: "", scenario: "SC-09" });
+                data.push({ title: "Heilung beim Hinausgehen aus Jericho", mt: "20,29-34", mk: "10,46-52", lk: "", jh: "", scenario: "SC-09" });
+            }
+
+            // SC-06: Salbung Spät (Bethanien)
+            data.push({
+                title: configState["SC-06"] === "A" ? "Vorbereitungs-Salbung in Bethanien durch Maria" : "Salbung Jesu (Zusammengeführt aus allen Traditionen)",
+                mt: "26,6-13", mk: "14,3-9",
+                lk: configState["SC-06"] === "B" ? "7,36-50*" : "",
+                jh: "12,1-8",
+                scenario: configState["SC-06"] === "B" ? "SC-06" : null
+            });
+
+            data.push({ title: "Einzug in Jerusalem", mt: "21,1-11", mk: "11,1-11", lk: "19,28-44", jh: "12,12-19", scenario: null });
+
+            // SC-03: Tempelreinigung Spät 
+            data.push({
+                title: configState["SC-03"] === "A" ? "Zweite Tempelreinigung (Eskalation)" : "Tempelreinigung (Zusammengeführt)",
+                mt: "21,12-17", mk: "11,15-19", lk: "19,45-48",
+                jh: configState["SC-03"] === "B" ? "2,13-25*" : "",
+                scenario: configState["SC-03"] === "B" ? "SC-03" : null
+            });
+
+            // SC-07: Abendmahl
+            if (configState["SC-07"] === "B") {
+                data.push({ title: "Johanneisches Mahl (Fußwaschung vor dem Fest)", mt: "", mk: "", lk: "", jh: "13,1-38", scenario: "SC-07" });
+                data.push({ title: "Das eigentliche Passahmahl (Synoptiker)", mt: "26,20-29", mk: "14,17-25", lk: "22,14-38", jh: "", scenario: "SC-07" });
+            } else {
+                data.push({ title: "Das Letzte Abendmahl (Harmonisiert als Passah)", mt: "26,20-29", mk: "14,17-25", lk: "22,14-38", jh: "13,1-38", scenario: "SC-07" });
+            }
+
+            data.push({ title: "Gethsemane bis Verleugnung", mt: "26,36-75", mk: "14,32-72", lk: "22,39-62", jh: "18,1-27", scenario: null });
+            
+            // SC-11: Kreuzigung Uhrzeit
+            if (configState["SC-11"] === "B") {
+                data.push({ title: "Widerspruch: Urteil des Pilatus in der 6. Stunde (Mittag)", mt: "", mk: "", lk: "", jh: "19,14-16", scenario: "SC-11" });
+                data.push({ title: "Widerspruch: Kreuzigung in der 3. Stunde (Morgen)", mt: "27,31-56", mk: "15,20-41", lk: "23,26-49", jh: "19,17-37", scenario: "SC-11" });
+            } else {
+                data.push({ title: "Verurteilung & Kreuzigung (Uhrzeiten harmonisiert)", mt: "27,11-56", mk: "15,1-41", lk: "23,1-49", jh: "18,28-19,37", scenario: "SC-11" });
+            }
+
+            data.push({ title: "Grablegung & leere Gruft", mt: "27,57-28,8", mk: "15,42-16,8", lk: "23,50-24,12", jh: "19,38-20,10", scenario: null });
+            
+            // SC-08: Erscheinungen
+            if (configState["SC-08"] === "A") {
+                data.push({ title: "Erscheinungen in Jerusalem (Früh/Spät)", mt: "", mk: "", lk: "24,13-49", jh: "20,11-29", scenario: "SC-08" });
+                data.push({ title: "Erscheinungen in Galiläa (Zwischenzeitlich)", mt: "28,9-20", mk: "16,9-20", lk: "", jh: "21,1-25", scenario: "SC-08" });
+            } else {
+                data.push({ title: "Erscheinungen (Ortsangaben als theologische Schwerpunkte)", mt: "28,9-20", mk: "16,9-20", lk: "24,13-49*", jh: "20,11-21,25*", scenario: "SC-08" });
+            }
+
+            // Assign numerical IDs
+            data.forEach((row, idx) => { row.id = idx + 1; });
+            return data;
+        }
+
+        // ---------------------------------------------------------
+        // 3. UI RENDERING
+        // ---------------------------------------------------------
+        function initializeApp() {
+            renderLab();
+            updateTableAndDashboard();
+        }
+
+        function renderLab() {
+            const container = document.getElementById('scenariosContainer');
+            container.innerHTML = '';
+            
+            for (const [key, data] of Object.entries(dynamicScenarios)) {
+                const div = document.createElement('div');
+                div.id = `main-desc-${key}`;
+                div.className = "bg-stone-800 rounded-xl p-6 border border-stone-700 shadow-lg transition duration-300 relative";
+                
+                let html = `
+                    <div class="mb-5 border-b border-stone-700 pb-3">
+                        <span class="px-3 py-1 bg-amber-600 text-white text-sm font-bold rounded tracking-wide shadow-sm">${key}</span>
+                        <h3 class="text-2xl font-bold text-stone-50 mt-4 mb-2">${data.title}</h3>
+                        <p class="text-sm text-stone-300">${data.desc}</p>
+                    </div>
+                    <div class="space-y-4 mt-4">
+                `;
+
+                ['A', 'B'].forEach(optKey => {
+                    const opt = data.options[optKey];
+                    const isChecked = configState[key] === optKey ? 'checked' : '';
+                    
+                    // Style Option A (Conservative) with emerald/amber highlights to show it's the recommended chronological path
+                    let activeClass = '';
+                    let borderClass = '';
+                    
+                    if (configState[key] === optKey) {
+                        if (optKey === 'A') {
+                            activeClass = 'bg-stone-900/90 border-emerald-500 shadow-md';
+                            borderClass = 'border-emerald-500 text-emerald-500';
+                        } else {
+                            activeClass = 'bg-stone-900/90 border-amber-500 shadow-md';
+                            borderClass = 'border-amber-500 text-amber-500';
+                        }
+                    } else {
+                        activeClass = 'bg-stone-900/40 border-stone-600 opacity-60 hover:opacity-100 hover:border-stone-400';
+                        borderClass = 'border-stone-500 text-stone-500';
+                    }
+
+                    const titleColor = optKey === 'A' ? 'text-emerald-400' : 'text-amber-400';
+
+                    html += `
+                        <label class="flex items-start gap-4 cursor-pointer p-4 rounded-lg border-2 transition-all duration-300 ${activeClass}">
+                            <input type="radio" name="radio-${key}" value="${optKey}" class="mt-1 w-5 h-5 bg-stone-700 ${borderClass} focus:ring-0 cursor-pointer" ${isChecked} onchange="updateConfig('${key}', '${optKey}')">
+                            <div class="flex-1">
+                                <span class="block font-bold ${titleColor} mb-1.5 text-base">Theorie ${optKey}: ${opt.label}</span>
+                                <span class="text-sm text-stone-300 leading-relaxed block">${opt.text}</span>
+                            </div>
+                        </label>
+                    `;
+                });
+
+                html += `
+                        <div class="mt-5 text-right">
+                             <button onclick="scrollToRowByScenario('${key}')" class="text-sm font-bold bg-stone-700 hover:bg-stone-600 text-stone-100 py-2 px-4 rounded shadow transition-colors border border-stone-600 flex items-center gap-2 ml-auto">
+                                <span>&#8593;</span> Ansicht in Tabelle prüfen
+                            </button>
+                        </div>
+                    </div>`;
+                div.innerHTML = html;
+                container.appendChild(div);
+            }
+        }
+
+        function updateConfig(scenarioKey, selectedOption) {
+            configState[scenarioKey] = selectedOption;
+            renderLab(); 
+            updateTableAndDashboard(); 
+        }
+
+        function updateTableAndDashboard() {
+            const rawData = getTableData();
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredData = rawData.filter(item => 
+                item.title.toLowerCase().includes(searchTerm) || 
+                (item.scenario && item.scenario.toLowerCase().includes(searchTerm))
+            );
+
+            const tbody = document.getElementById('harmonieBody');
+            tbody.innerHTML = '';
+            
+            if (filteredData.length === 0) {
+                document.getElementById('noResults').classList.remove('hidden');
+            } else {
+                document.getElementById('noResults').classList.add('hidden');
+                
+                filteredData.forEach((item, index) => {
+                    const tr = document.createElement('tr');
+                    tr.id = `row-${item.id}`;
+                    tr.setAttribute('data-scenario', item.scenario || '');
+                    
+                    const isMergedTarget = Object.values(item).some(val => typeof val === 'string' && val.includes('*'));
+                    
+                    tr.className = `scroll-mt-24 border-l-4 transition duration-300 ${isMergedTarget ? 'bg-amber-50/60 hover:bg-amber-100 border-l-amber-500' : 'hover:bg-stone-50 border-l-transparent'}`;
+                    
+                    let scenarioBadge = '';
+                    if (item.scenario) {
+                        scenarioBadge = `<button onclick="scrollToScenario('${item.scenario}')" class="inline-flex items-center px-2 py-1 rounded text-xs font-bold border bg-amber-200 text-amber-900 border-amber-300 hover:bg-amber-300 hover:shadow transition" title="Zur Theorie im Labor springen">
+                            ${item.scenario} &#8595;
+                        </button>`;
+                    }
+
+                    const formatText = (text) => text.replace(/\*/g, '<span class="text-amber-600 font-bold text-lg leading-none" title="Text verschoben aufgrund der gewählten Theorie im Labor">*</span>');
+
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap text-stone-500 font-mono text-xs font-bold">${index + 1}</td>
+                        <td class="px-4 py-3 text-stone-900 ${isMergedTarget ? 'font-bold' : 'font-medium'}">${item.title}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight">${formatText(item.mt || '-')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight">${formatText(item.mk || '-')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight">${formatText(item.lk || '-')}</td>
+                        <td class="px-4 py-3 text-stone-700 text-sm font-mono tracking-tight">${formatText(item.jh || '-')}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">${scenarioBadge}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Dashboard Updates based on rawData
+            let mtCount = 0, mkCount = 0, lkCount = 0, jhCount = 0;
+            
+            rawData.forEach(e => {
+                if(e.mt) mtCount++;
+                if(e.mk) mkCount++;
+                if(e.lk) lkCount++;
+                if(e.jh) jhCount++;
+            });
+
+            const statsList = document.getElementById('statsList');
+            statsList.innerHTML = `
+                <li class="flex justify-between border-b border-stone-200 pb-1 text-sm"><span>Matthäus-Vorkommen:</span> <strong class="text-stone-800">${mtCount}</strong></li>
+                <li class="flex justify-between border-b border-stone-200 pb-1 text-sm"><span>Markus-Vorkommen:</span> <strong class="text-stone-800">${mkCount}</strong></li>
+                <li class="flex justify-between border-b border-stone-200 pb-1 text-sm"><span>Lukas-Vorkommen:</span> <strong class="text-stone-800">${lkCount}</strong></li>
+                <li class="flex justify-between border-b border-stone-200 pb-1 text-sm"><span>Johannes-Vorkommen:</span> <strong class="text-stone-800">${jhCount}</strong></li>
+                <li class="pt-3 text-stone-900 flex justify-between items-center mt-2">
+                    <span class="font-bold">Chronologische Ereignis-Zeilen:</span> 
+                    <span class="bg-amber-600 text-white px-3 py-1.5 rounded-md font-bold text-lg shadow-sm">${rawData.length}</span>
+                </li>
+            `;
+
+            if (myChart) {
+                myChart.data.datasets[0].data = [mtCount, mkCount, lkCount, jhCount];
+                myChart.update();
+            } else {
+                const ctx = document.getElementById('gospelChart').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Matthäus', 'Markus', 'Lukas', 'Johannes'],
+                        datasets: [{
+                            data: [mtCount, mkCount, lkCount, jhCount],
+                            backgroundColor: ['#44403c', '#a8a29e', '#d97706', '#fef3c7'],
+                            borderWidth: 2, borderColor: '#ffffff',
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { font: { family: "'Inter', sans-serif", size: 14 } } }
+                        }, cutout: '65%'
+                    }
+                });
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 4. NAVIGATION
+        // ---------------------------------------------------------
+        function scrollToScenario(scenarioId) {
+            scrollToSection('szenarien'); 
+            setTimeout(() => {
+                const el = document.getElementById(`main-desc-${scenarioId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('scenario-highlight-main');
+                    setTimeout(() => el.classList.remove('scenario-highlight-main'), 2500);
+                }
+            }, 300);
+        }
+
+        function scrollToRowByScenario(scenarioId) {
+            document.getElementById('searchInput').value = '';
+            updateTableAndDashboard();
+            
+            setTimeout(() => {
+                const rows = document.querySelectorAll(`tr[data-scenario="${scenarioId}"]`);
+                if (rows.length > 0) {
+                    rows[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    rows.forEach(r => {
+                        r.classList.add('row-highlight');
+                        setTimeout(() => r.classList.remove('row-highlight'), 2500);
+                    });
+                }
+            }, 100);
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', updateTableAndDashboard);
+        window.onload = initializeApp;
+    </script>
+</body>
+</html>
